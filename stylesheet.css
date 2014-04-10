@@ -1,0 +1,38 @@
+table {
+    border-collapse: collapse;
+}
+table td, table th {
+    text-align: center;
+    border: 1px solid gray;
+}
+
+table th {
+    padding: 5px;
+}
+input {
+    margin : 5px;
+    vertical-align: middle;
+}
+
+ul {
+    list-style:none;
+}
+
+li {
+    float:left;
+    padding:5px;
+    margin: 5px;
+    border: 1px solid gray;
+}
+
+label {
+    vertical-align: middle;
+}
+
+div {
+    padding: 5px;
+}
+
+.error {
+    background-color: pink;
+}
