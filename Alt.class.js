@@ -30,17 +30,26 @@ function Alt( root ) {
     }
     
     this.putInformation = function( info, block ) {
-        var list = block.querySelector( 'select' );
+        var list = block.querySelector( 'select' ),
+              k = 0;
+              
         for ( var i = 0; i < list.length; i++ ) {
             if ( this.element_metainf.children[i].name == info.children[0].name
-                && this.element_metainf.children[i].sort == info.children[0].sort ) {
+                || ( info.children[0].name == "" 
+                    && this.element_metainf.children[i].sort == info.children[0].sort 
+                    ) 
+                ) {
                 
                 list[i].selected = true;
-                $( list ).trigger( 'change' );
-                this.element_metainf.children[i].putInformation( info.children[0], block.querySelector( 'div' ) );
+                $( list ).trigger( 'change' ); 
+                
+                if ( this.element_metainf.children[i].interface_specifier == INTERFACE_SPECIFIER.SET ) {
+                    this.element_metainf.children[i].putInformation( info.children, block.querySelector( 'div' ) );
+                } else {
+                    this.element_metainf.children[i].putInformation( info.children[0], block.querySelector( 'div' ) );
+                }
                 break;
-            }
-            
+            }            
         }
     }
     
