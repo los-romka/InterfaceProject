@@ -27,6 +27,10 @@ function String( root ) {
         return;
     }
     
+    this.putInformation = function( info, block ) {
+        block.querySelector( 'input' ).value = FROM.STR( info.sort );
+    }
+    
     function get_string_block( element_metainf, title ) {
         var string_block = document.createElement( 'div' ),
               label = document.createElement( 'label' ),

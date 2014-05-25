@@ -27,6 +27,10 @@ function Real( root ) {
         return;
     }
     
+    this.putInformation = function( info, block ) {
+        block.querySelector( 'input' ).value = FROM.REAL( info.sort );
+    }
+    
     function get_real_block( element_metainf, title ) {
         var real_block = document.createElement( 'div' ),
               label = document.createElement( 'label' ),

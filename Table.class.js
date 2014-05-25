@@ -75,19 +75,8 @@ function Table( root ) {
     
     this.getInformation = function( block ) { 
         var list = block.querySelector( 'table' ),
-              set = new Vertex( this.name, [], "", null );
-              
-        var size = 0;
-        
-        if ( this.type == INTERFACE_SPECIFIER.ROW ) {
-            size = list.children.length - this.height - 1;
-        } else {            
-            for ( var j = 0; j < list.children[0].children.length; j++ ) {
-                if ( list.children[0].children[j].nodeName != "TH" ) {
-                    size++;
-                }
-            }
-        }    
+              set = new Vertex( this.name, [], "", null ),             
+              size = get_size_from_blocks( this.type, this.height, list );
         
         for ( var i = 0; i < size ; i++ ) {
             var leafs_vals = Array();
@@ -108,6 +97,117 @@ function Table( root ) {
         } 
 
         return set;
+    }
+    
+    this.putInformation = function( info, block ) {
+        var children = block.children, 
+              title_shift = ( block.children[0].nodeName == "H1" ? 1 : 0),
+              elementsOfSet = new Array(),
+              k = 0,
+              list = block.querySelector( 'table' ),
+              size = get_size_from_blocks( this.type, this.height, list ),
+              leafs_meta = get_leafs( get_first_traversal( clone( this.element_metainf ) ) )
+              
+              
+        while ( info.children[k] && this.element_metainf.name == info.children[k].name ) {
+            elementsOfSet.push( info.children[k] );
+            k++;
+        }
+        
+        while ( size < elementsOfSet.length ) {
+            block.lastChild.children[0].click();
+            size++;
+        }
+        
+        for ( var i = 0; i < size ; i++ ) {
+            var leafs_blocks = Array();
+            
+            if ( this.type == INTERFACE_SPECIFIER.ROW ) {
+                for ( var j = 0; j < list.children[i + this.height + 1].children.length; j++ ) {
+                    leafs_blocks.push( list.children[i + this.height + 1].children[j].querySelector( 'div' ) );
+                }
+            } else {
+                for ( var j = this.width - 1; j >= 0 ; j-- ) {
+                    leafs_blocks.push( list.children[j].children[list.children[j].children.length - size + i].querySelector( 'div' ) );
+                }
+            }
+            
+            put_info_leafs_vals( elementsOfSet[i], leafs_blocks, this.element_metainf );
+        }  
+    }
+    
+    function get_size_from_blocks( type, height, table ) {
+        var size = 0;
+        
+        if ( type == INTERFACE_SPECIFIER.ROW ) {
+            size = table.children.length - height - 1;
+        } else {            
+            for ( var j = 0; j < table.children[0].children.length; j++ ) {
+                if ( table.children[0].children[j].nodeName != "TH" ) {
+                    size++;
+                }
+            }
+        }    
+        
+        return size;
+    }
+    
+    function put_info_leafs_vals( info, leafs_blocks, element_metainf ) {
+        var traversal_meta = Array(),
+              queue_meta = Array(),
+              traversal_info = Array(),
+              queue_info = Array();
+        
+        queue_meta.push( clone(element_metainf) );
+        queue_info.push( clone(info) );
+        
+        while ( queue_meta.length ) {
+            
+            var current_meta = queue_meta.pop(),
+                  current_info = queue_info.pop();
+                  
+            traversal_meta.push( current_meta );            
+            
+            if ( isHeaderVertex( current_meta ) ) {       
+                var k = 0;
+                for ( var i = 0; i < current_meta.children.length; i++ ) {
+                    queue_meta.push( current_meta.children[i] );
+                    
+                    if ( in_array( current_meta.children[i].interface_specifier, [INTERFACE_SPECIFIER.SET] ) ) {
+                        var elementsOfSet = new Array();
+                        while ( current_info.children[i + k] && current_meta.children[i].name == current_info.children[i + k].name ) {
+                            elementsOfSet.push( current_info.children[i + k] );
+                            k++;
+                        }
+                        k--;
+                        queue_info.push( elementsOfSet );
+                    } else {
+                        queue_info.push( current_info.children[i+k] );
+                    }               
+                }
+            } else {
+                traversal_info.push( current_info );
+            }
+        }
+        
+        for ( var i = traversal_meta.length - 1; i >= 0; i-- ) {
+            if ( isHeaderVertex( traversal_meta[i] ) ) {
+                traversal_meta.splice( i, 1 );
+            }  
+        }
+        
+        if ( traversal_meta.length == 0 ) {
+            element_metainf.resetSpecifiers();
+            element_metainf.updateSpecifier();
+            element_metainf.updateInterfaceSpecifier();
+            
+            traversal_meta.push( element_metainf );
+            traversal_info.push( info ); 
+        }
+        
+        for ( var i = 0; i < traversal_meta.length; i++ ) {
+            traversal_meta[i].putInformation( traversal_info[i], leafs_blocks.pop() );
+        }
     }
     
     function merge_leafs_val_with_meta( leafs_vals, element_metainf ) {

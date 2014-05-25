@@ -29,6 +29,21 @@ function Alt( root ) {
         return vertex;
     }
     
+    this.putInformation = function( info, block ) {
+        var list = block.querySelector( 'select' );
+        for ( var i = 0; i < list.length; i++ ) {
+            if ( this.element_metainf.children[i].name == info.children[0].name
+                && this.element_metainf.children[i].sort == info.children[0].sort ) {
+                
+                list[i].selected = true;
+                $( list ).trigger( 'change' );
+                this.element_metainf.children[i].putInformation( info.children[0], block.querySelector( 'div' ) );
+                break;
+            }
+            
+        }
+    }
+    
     function get_alt_block( element_metainf, title ) {
         var alt_block = document.createElement( 'div' ),
               select = document.createElement( 'select' );
@@ -52,6 +67,7 @@ function Alt( root ) {
                 option.text = element_metainf.children[i].name;
             }
             option.value = i;
+            option.name = element_metainf.children[i].name;
             select.add( option );
         }
         
@@ -60,7 +76,7 @@ function Alt( root ) {
             alt_block.appendChild( element_metainf.children[select.value].getEditInterface() );
         }
         
-        select.onchange = function() { //solve
+        select.onchange = function() {
             if ( alt_block.querySelector( 'div' ) )
                 alt_block.querySelector( 'div' ).remove();
             if ( !element_metainf.children[select.value].sort || element_metainf.children[select.value].sort.match( TERMINAL.SORT.REGULAR_EXPR ) ) {

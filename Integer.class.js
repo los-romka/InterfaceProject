@@ -22,8 +22,13 @@ function Integer( root ) {
             $(block).removeClass("error");
             return new Vertex( this.element_metainf.name, [], "", value );
         }
+        
         $(block).addClass("error");
         return;
+    }
+    
+    this.putInformation = function( info, block ) {
+        block.querySelector( 'input' ).value = FROM.INT( info.sort );
     }
     
     function get_integer_block( element_metainf, title ) {

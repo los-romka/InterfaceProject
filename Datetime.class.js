@@ -26,6 +26,10 @@ function Datetime( root ) {
         return;
     }
     
+    this.putInformation = function( info, block ) {
+        block.querySelector( 'input' ).value = FROM.DATE( info.sort );
+    }
+    
     function get_datetime_block( element_metainf, title ) {
         var datetime_block = document.createElement( 'div' ),
               label = document.createElement( 'label' ),

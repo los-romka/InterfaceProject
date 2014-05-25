@@ -72,6 +72,27 @@ function Set( root ) {
         return set;
     }
     
+    this.putInformation = function( info, block ) {
+        var list = block.querySelector( 'ul' ),
+              i = 0;
+              
+        this.element_metainf.resetSpecifiers();
+        this.element_metainf.updateSpecifier();
+        this.element_metainf.updateInterfaceSpecifier();
+        
+        if ( list.children.length > 0 ) {
+            this.element_metainf.putInformation( info[i], list.lastChild.querySelector( 'div' ) );
+            i++;
+        }
+        
+        if ( info ) {
+            for ( ; i < info.length; i++ ) {
+                block.lastChild.children[0].click();
+                this.element_metainf.putInformation( info[i], list.lastChild.querySelector( 'div' ) );
+            }     
+        }
+    }
+    
     function get_set_block( element_metainf, title ) {
         var set_block = document.createElement( 'div' ),
               elements = document.createElement( 'ul' );

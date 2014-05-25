@@ -113,6 +113,23 @@ function Vertex( name, specifiers, interface_specifier, sort ) {
         
         return info;
     };
+    
+    this.putInformation = function( info, block ) {        
+        switch ( this.interface_specifier ) {
+            case INTERFACE_SPECIFIER.TABLE : info = ( new Table( this ) ).putInformation( info, block ); break;
+            case INTERFACE_SPECIFIER.ALT : info = ( new Alt( this ) ).putInformation( info, block ); break; 
+            case INTERFACE_SPECIFIER.SET : info = ( new Set( this ) ).putInformation( info, block ); break;
+            case INTERFACE_SPECIFIER.COMPLEX : info = ( new Complex( this ) ).putInformation( info, block ); break;
+            case INTERFACE_SPECIFIER.BOOLEAN : info = ( new Boolean( this ) ).putInformation( info, block ); break; 
+            case INTERFACE_SPECIFIER.DATETIME : info = ( new Datetime( this ) ).putInformation( info, block ); break; 
+            case INTERFACE_SPECIFIER.STRING : info = ( new String( this ) ).putInformation( info, block ); break; 
+            case INTERFACE_SPECIFIER.INTEGER : info = ( new Integer( this ) ).putInformation( info, block ); break; 
+            case INTERFACE_SPECIFIER.REAL : info = ( new Real( this ) ).putInformation( info, block ); break;   
+            case INTERFACE_SPECIFIER.BLOB : info = ( new Blob( this ) ).putInformation( info, block ); break;
+            case INTERFACE_SPECIFIER.TERMINAL_VALUE : info = ( new TerminalValue( this ) ).putInformation( info, block ); break;
+            default : info = []; break;
+        }
+    };
 }
 
 function IrToJson( text ) {
@@ -273,7 +290,7 @@ TERMINAL = {
         "BOOL" : /\[(true|false)\]/g,
         "DATE" : /\[[\d]{2}\.[\d]{2}\.[\d]{4}-[\d]{2}:[\d]{2}:[\d]{2}.[\d]{3}\]/g,
         "BLOB" : /\['[\w\W]*'\]/g,
-        "REGULAR_EXPR" : /[^\[][\s\S]+[^\]]/g
+        "REGULAR_EXPR" : /[^\[]([\S\s]*)(?=\])/g
     },
     "REGULAR_EXPR" : /\[[\w\W]*\]/g
 }
@@ -295,6 +312,23 @@ TO = {
         return "[" + day + "." + month + "." + year + "-" + hour + ":" + min + ":" + sec + "." + milisec + "]";
     },
     "BLOB" : function( value ) { return "[\'" + value + "\']";}
+}
+
+FROM = {
+    "STR" : function( value ) { return value.substring( 2, value.length - 2 ); },
+    "INT" : function( value ) { return value.substring( 1, value.length - 1 ); },
+    "REAL" : function( value ) { return value.substring( 1, value.length - 1 ); },
+    "BOOL" : function( value ) { return value.substring( 1, value.length - 1 ); },
+    "DATE" : function( value ) {
+        var year = value.substring(7, 11),
+              month = value.substring(4, 6),
+              day = value.substring(1, 3),
+              hour = value.substring(12, 14),
+              min = value.substring(15, 17);              
+        
+        return year + "-" + month + "-" + day + "T" + hour + ":" + min;
+    },
+    "BLOB" : function( value ) { return value.substring( 2, value.length - 2 ); },
 }
 
 function in_array( value, array ) {

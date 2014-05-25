@@ -20,6 +20,10 @@ function TerminalValue( root ) {
         return new Vertex( this.element_metainf.name, [], "", value );
     }
     
+    this.putInformation = function( info, block ) {
+        
+    }
+    
     function get_terminal_value_block( element_metainf, title ) {
         var terminal_value_block = document.createElement( 'div' ),
               value_block = document.createElement( 'span' ),
@@ -31,7 +35,7 @@ function TerminalValue( root ) {
         
         if ( title ) {
             var ttl = document.createElement( 'span' );
-            ttl.textContent = title;
+            ttl.textContent = title + " ";
             terminal_value_block.appendChild( ttl );
             element_metainf.specifiers.push( SPECIFIER.PROXY );
         }

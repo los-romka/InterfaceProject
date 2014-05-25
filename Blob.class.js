@@ -26,6 +26,10 @@ function Blob( root ) {
         return;
     }
     
+    this.putInformation = function( info, block ) {
+        block.querySelector( 'input' ).value = FROM.BLOB( info.sort );
+    }
+    
     function get_blob_block( element_metainf, title ) {
         var blob_block = document.createElement( 'div' ),
               label = document.createElement( 'label' ),

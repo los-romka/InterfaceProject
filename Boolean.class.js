@@ -26,6 +26,10 @@ function Boolean( root ) {
         return;
     }
     
+    this.putInformation = function( info, block ) {
+        block.querySelector( 'input' ).checked = ( FROM.BOOL( info.sort ) == 'true' ? true : false );
+    }
+    
     function get_boolean_block( element_metainf, title ) {
         var boolean_block = document.createElement( 'div' ),
               label = document.createElement( 'label' ),
