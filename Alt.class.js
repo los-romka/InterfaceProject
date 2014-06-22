@@ -32,12 +32,10 @@ function Alt( root ) {
     this.putInformation = function( info, block ) {
         var list = block.querySelector( 'select' ),
               k = 0;
-              
+              console.log(info, block)
         for ( var i = 0; i < list.length; i++ ) {
-            if ( this.element_metainf.children[i].name == info.children[0].name
-                || ( info.children[0].name == "" 
-                    && this.element_metainf.children[i].sort == info.children[0].sort 
-                    ) 
+            if ( ( info.children[0].name != "" && this.element_metainf.children[i].name == info.children[0].name )
+                    || ( info.children[0].name == "" && this.element_metainf.children[i].sort == info.children[0].sort ) 
                 ) {
                 
                 list[i].selected = true;
