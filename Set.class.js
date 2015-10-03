@@ -1,4 +1,4 @@
-function Set( root ) {
+;function Set( root ) {
     
     if ( root.interface_specifier != INTERFACE_SPECIFIER.SET ) return;
     

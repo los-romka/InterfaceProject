@@ -1,4 +1,4 @@
-function String( root ) {
+;function String( root ) {
 
     if ( root.interface_specifier != INTERFACE_SPECIFIER.STRING ) return;
     

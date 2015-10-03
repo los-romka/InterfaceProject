@@ -1,4 +1,4 @@
-function Integer( root ) {
+;function Integer( root ) {
 
     if ( root.interface_specifier != INTERFACE_SPECIFIER.INTEGER ) return;
     

@@ -1,4 +1,4 @@
-function Boolean( root ) {
+;function Boolean( root ) {
     
     if ( root.interface_specifier != INTERFACE_SPECIFIER.BOOLEAN ) return;
     

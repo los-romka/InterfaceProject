@@ -1,4 +1,4 @@
-function TerminalValue( root ) {
+;function TerminalValue( root ) {
     
     if ( root.interface_specifier != INTERFACE_SPECIFIER.TERMINAL_VALUE ) return;
     

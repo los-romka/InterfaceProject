@@ -1,4 +1,4 @@
-function Alt( root ) {
+;function Alt( root ) {
 
     if ( root.interface_specifier != INTERFACE_SPECIFIER.ALT ) return;
     

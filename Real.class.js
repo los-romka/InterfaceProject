@@ -1,4 +1,4 @@
-function Real( root ) {
+;function Real( root ) {
 
     if ( root.interface_specifier != INTERFACE_SPECIFIER.REAL ) return;
     

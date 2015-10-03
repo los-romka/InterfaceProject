@@ -1,4 +1,4 @@
-function Complex( root ) {
+;function Complex( root ) {
 
     if ( root.interface_specifier != INTERFACE_SPECIFIER.COMPLEX ) return;
     

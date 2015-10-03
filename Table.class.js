@@ -1,4 +1,4 @@
-function Table( root ) {
+;function Table( root ) {
 
     if ( root.interface_specifier != INTERFACE_SPECIFIER.TABLE ) return;
     

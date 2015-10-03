@@ -1,4 +1,4 @@
-function Datetime( root ) {
+;function Datetime( root ) {
 
     if ( root.interface_specifier != INTERFACE_SPECIFIER.DATETIME ) return;
     

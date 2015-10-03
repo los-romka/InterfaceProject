@@ -1,4 +1,4 @@
-function Blob( root ) {
+;function Blob( root ) {
 
     if ( root.interface_specifier != INTERFACE_SPECIFIER.BLOB ) return;
     
