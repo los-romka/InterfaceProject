@@ -3,6 +3,7 @@
  */
 (function( $ ) {
     //#include Project.js
+    //#include Common.js
     //#include IrParser.class.js
     //#include Table.class.js
     //#include Set.class.js
