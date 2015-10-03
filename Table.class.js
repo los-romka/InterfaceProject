@@ -79,7 +79,7 @@
               size = get_size_from_blocks( this.type, this.height, list );
         
         for ( var i = 0; i < size ; i++ ) {
-            var leafs_vals = Array();
+            var leafs_vals = [];
             
             if ( this.type == INTERFACE_SPECIFIER.ROW ) {
                 for ( var j = 0; j < list.children[i + this.height + 1].children.length; j++ ) {
@@ -102,7 +102,7 @@
     this.putInformation = function( info, block ) {
         var children = block.children, 
               title_shift = ( block.children[0].nodeName == "H1" ? 1 : 0),
-              elementsOfSet = new Array(),
+              elementsOfSet = [],
               k = 0,
               list = block.querySelector( 'table' ),
               size = get_size_from_blocks( this.type, this.height, list ),
@@ -120,7 +120,7 @@
         }
         
         for ( var i = 0; i < size ; i++ ) {
-            var leafs_blocks = Array();
+            var leafs_blocks = [];
             
             if ( this.type == INTERFACE_SPECIFIER.ROW ) {
                 for ( var j = 0; j < list.children[i + this.height + 1].children.length; j++ ) {
@@ -153,10 +153,10 @@
     }
     
     function put_info_leafs_vals( info, leafs_blocks, element_metainf ) {
-        var traversal_meta = Array(),
-              queue_meta = Array(),
-              traversal_info = Array(),
-              queue_info = Array();
+        var traversal_meta = [],
+              queue_meta = [],
+              traversal_info = [],
+              queue_info = [];
         
         queue_meta.push( clone(element_metainf) );
         queue_info.push( clone(info) );
@@ -165,22 +165,22 @@
             
             var current_meta = queue_meta.pop(),
                   current_info = queue_info.pop();
-                  
+
             traversal_meta.push( current_meta );            
-            
+
             if ( isHeaderVertex( current_meta ) ) {       
                 var k = 0;
                 for ( var i = 0; i < current_meta.children.length; i++ ) {
                     queue_meta.push( current_meta.children[i] );
                     
-                    if ( in_array( current_meta.children[i].interface_specifier, [INTERFACE_SPECIFIER.SET] ) ) {
-                        var elementsOfSet = new Array();
+                    if ( in_array( current_meta.children[i].interface_specifier, [interface_specifier.set] ) ) {
+                        var elementsofset = [];
                         while ( current_info.children[i + k] && current_meta.children[i].name == current_info.children[i + k].name ) {
-                            elementsOfSet.push( current_info.children[i + k] );
+                            elementsofset.push( current_info.children[i + k] );
                             k++;
                         }
                         k--;
-                        queue_info.push( elementsOfSet );
+                        queue_info.push( elementsofset );
                     } else {
                         queue_info.push( current_info.children[i+k] );
                     }               
@@ -371,11 +371,11 @@
     }
     
     function get_vertical_matrix( width, height, traversal ) {
-        var matrix = Array(),
+        var matrix = [],
               current;        
               
         for ( var i = 0; i < width; i++ ) {
-            matrix[i] = Array();
+            matrix[i] = [];
         }
         
         var row_height = 0,
@@ -408,11 +408,11 @@
     }
 
     function get_horizontal_matrix( width, height, traversal ) {
-        var matrix = Array(), 
+        var matrix = [], 
               current;        
               
         for ( var i = 0; i <= height; i++ ) {
-            matrix[i] = Array();
+            matrix[i] = [];
         }
         
         if ( in_array( SPECIFIER.PROXY, traversal[0].specifiers ) ) {
@@ -443,8 +443,8 @@
     }
     
     function get_first_traversal( element_metainf ) {
-        var traversal = Array(),
-              queue = Array();
+        var traversal = [],
+              queue = [];
               
         queue.push( element_metainf );
           

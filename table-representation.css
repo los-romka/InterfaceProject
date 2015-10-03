@@ -1,39 +1,44 @@
-table {
+.table-representation table {
     border-collapse: collapse;
 }
-table td, table th {
+.table-representation table td, table th {
     text-align: center;
     border: 1px solid gray;
 }
 
-table th {
+.table-representation table th {
     padding: 5px;
 }
-input {
+
+.table-representation input {
     margin : 5px;
     vertical-align: middle;
 }
 
-ul {
+.table-representation ul {
     list-style:none;
 }
 
-li {
+.table-representation li {
     float:left;
     padding:5px;
     margin: 5px;
     border: 1px solid gray;
 }
 
-label {
+.table-representation label {
     vertical-align: middle;
 }
 
-div {
+.table-representation div {
     padding: 5px;
     display: table;
 }
 
-.error {
+.table-representation .error {
     background-color: pink;
+}
+
+.table-representation {
+    background-color: white;
 }
