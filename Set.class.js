@@ -53,7 +53,7 @@
     
     this.getInformation = function( block ) { 
         var list = block.querySelector( 'ul' ),
-              set = Array();
+              set = [];
               
         this.element_metainf.resetSpecifiers();
         this.element_metainf.updateSpecifier();

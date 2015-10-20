@@ -20,7 +20,7 @@
                     _interface_specifier = full_name.match( INTERFACE_SPECIFIER.REGULAR_EXPR ),
                     _sort = full_name.match( TERMINAL.REGULAR_EXPR ),
 
-                    specifiers = ( ( _specifiers ) ? _specifiers : Array() ),
+                    specifiers = ( ( _specifiers ) ? _specifiers : [] ),
                     interface_specifier = ( ( _interface_specifier ) ? _interface_specifier[0] : INTERFACE_SPECIFIER.UNDEFINED ),
                     sort = ( ( _sort ) ? _sort[0] : null );
 
@@ -40,7 +40,7 @@
                 }
             }
 
-            return tree;
+            return tree.children[0];
         },
 
         toIr: function ( json ) {

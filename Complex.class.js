@@ -46,7 +46,7 @@
               
         for ( var i = 0; i < this.element_metainf.children.length; i++ ) {
             if ( in_array( this.element_metainf.children[i].interface_specifier, [INTERFACE_SPECIFIER.SET] ) ) {
-                var elementsOfSet = new Array();
+                var elementsOfSet = [];
                 while ( info.children[i + k] && this.element_metainf.children[i].name == info.children[i + k].name ) {
                     elementsOfSet.push( info.children[i + k] );
                     k++;

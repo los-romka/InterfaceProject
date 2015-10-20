@@ -5,6 +5,7 @@
     //#include Project.js
     //#include Constants.js
     //#include Common.js
+    //#include Vertex.class.js
     //#include IrParser.class.js
     //#include Table.class.js
     //#include Set.class.js
