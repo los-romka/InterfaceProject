@@ -1,53 +1,64 @@
-;function Boolean( root ) {
-    
-    if ( root.interface_specifier != INTERFACE_SPECIFIER.BOOLEAN ) return;
-    
-    var root = clone( root );
-    
-    this.title = ( !in_array( SPECIFIER.PROXY, root.specifiers ) ? root.name : null );
-    this.element_metainf = root;
-    
-    this.boolean_block;
-    
-    this.getEditInterface = function() {
-        this.boolean_block = get_boolean_block( this.element_metainf, this.title );
-        
-        return this.boolean_block;
+;function BooleanVertex( $block, meta ) {
+    var data = $block.data('boolean');
+    if (data) {
+        return data;
     }
-    
-    this.getInformation = function( block ) {
-        var value = TO.BOOL( block.querySelector( 'input' ).checked );
-        
-        if ( value.match( TERMINAL.VALUE.BOOL ) ) {
-            $(block).removeClass("error");
-            return new Vertex( this.element_metainf.name, [], "", value );
+
+    /* init DOM */
+    var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
+    var form = get_boolean_block( meta, label );
+    $block.append( form );
+
+    /* init object */
+    var self = $.extend($block, {
+        meta: meta,
+        setInfo: setInfo,
+        getInfo: getInfo,
+        destroy: function() {
+            self.html('');
         }
-        $(block).addClass("error");
-        return;
+    });
+
+    self.data('boolean', self);
+
+    return self;
+
+    function getInfo() {
+        var value = TO.BOOL( self.find( 'input' ).is(":checked") );
+
+        if ( !value.match( TERMINAL.VALUE.BOOL ) ) {
+            self.addClass("error");
+            return;
+        }
+        self.removeClass("error");
+
+        return new Vertex( self.meta.name, self.meta.specifiers, self.meta.interface_specifier, value );
     }
-    
-    this.putInformation = function( info, block ) {
-        block.querySelector( 'input' ).checked = ( FROM.BOOL( info.sort ) == 'true' ? true : false );
+
+    function setInfo( info ) {
+        var value = FROM.BOOL( info.sort ) == 'true';
+        self.find( 'input' ).attr('checked', !!value );
+
+        return self;
     }
-    
+
     function get_boolean_block( element_metainf, title ) {
         var boolean_block = document.createElement( 'div' ),
-              label = document.createElement( 'label' ),
-              input = document.createElement( 'input' );
+            label = document.createElement( 'label' ),
+            input = document.createElement( 'input' );
         $(boolean_block).addClass("boolean_block");
         input.type = "checkbox";
-        
+
         label.appendChild( input );
-        
+
         if ( title ) {
             var ttl = document.createElement( 'span' );
             ttl.textContent = title;
             label.appendChild( ttl );
-            element_metainf.specifiers.push( SPECIFIER.PROXY );
         }
-        
+
         boolean_block.appendChild( label );
-        
+
         return boolean_block;
     }
 }

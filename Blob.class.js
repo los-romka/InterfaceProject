@@ -1,51 +1,62 @@
-;function Blob( root ) {
+;function BlobVertex( $block, meta ) {
+    var data = $block.data('blob');
+    if (data) {
+        return data;
+    }
 
-    if ( root.interface_specifier != INTERFACE_SPECIFIER.BLOB ) return;
-    
-    var root = clone( root );
-    
-    this.title = ( !in_array( SPECIFIER.PROXY, root.specifiers ) ? root.name : null );
-    this.element_metainf = root;
-    
-    this.blob_block;
-    
-    this.getEditInterface = function() {
-        this.blob_block = get_blob_block( this.element_metainf, this.title );
-        
-        return this.blob_block;
-    }
-    
-    this.getInformation = function( block ) {
-        var value = TO.BLOB( block.querySelector( 'input' ).value );
-        
-        if ( value.match( TERMINAL.VALUE.BLOB ) ) {
-            $(block).removeClass("error");
-            return new Vertex( this.element_metainf.name, [], "", value );
+    /* init DOM */
+    var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
+    var form = get_blob_block( meta, label );
+    $block.append( form );
+
+    /* init object */
+    var self = $.extend($block, {
+        meta: meta,
+        setInfo: setInfo,
+        getInfo: getInfo,
+        destroy: function() {
+            self.html('');
         }
-        $(block).addClass("error");
-        return;
+    });
+
+    self.data('blob', self);
+
+    return self;
+
+    function getInfo() {
+        var value = TO.BLOB( self.find( 'input' ).val() );
+
+        if ( !value.match( TERMINAL.VALUE.BLOB ) ) {
+            self.addClass("error");
+            return;
+        }
+        self.removeClass("error");
+
+        return new Vertex( self.meta.name, self.meta.specifiers, self.meta.interface_specifier, value );
     }
-    
-    this.putInformation = function( info, block ) {
-        block.querySelector( 'input' ).value = FROM.BLOB( info.sort );
+
+    function setInfo( info ) {
+        var value = FROM.BLOB( info.sort );
+        self.find( 'input' ).val( value ? value : "" );
+
+        return self;
     }
-    
+
     function get_blob_block( element_metainf, title ) {
         var blob_block = document.createElement( 'div' ),
-              label = document.createElement( 'label' ),
-              input = document.createElement( 'input' );
+            label = document.createElement( 'label' ),
+            input = document.createElement( 'input' );
         $(blob_block).addClass("blob_block");
-        
+
         if ( title ) {
             var ttl = document.createElement( 'span' );
             ttl.textContent = title;
             label.appendChild( ttl );
-            element_metainf.specifiers.push( SPECIFIER.PROXY );
         }
         label.appendChild( input );
-        
+
         blob_block.appendChild( label );
-        
+
         return blob_block;
     }
 }

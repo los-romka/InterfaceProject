@@ -1,53 +1,63 @@
-;function String( root ) {
+;function StringVertex( $block, meta ) {
+    var data = $block.data('string');
+    if (data) {
+        return data;
+    }
 
-    if ( root.interface_specifier != INTERFACE_SPECIFIER.STRING ) return;
-    
-    var root = clone( root );
-    
-    this.title = ( !in_array( SPECIFIER.PROXY, root.specifiers ) ? root.name : null );
-    this.element_metainf = root;
-    
-    this.string_block;
-    
-    this.getEditInterface = function() {
-        this.string_block = get_string_block( this.element_metainf, this.title );
-        
-        return this.string_block;
-    }
-    
-    this.getInformation = function( block ) {
-        var value = TO.STR( block.querySelector( 'input' ).value );
-        
-        if ( value.match( TERMINAL.VALUE.STR ) ) {
-            $(block).removeClass("error");
-            return new Vertex( this.element_metainf.name, [], "", value );
+    /* init DOM */
+    var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
+    var form = get_string_block( meta, label );
+    $block.append( form );
+
+    /* init object */
+    var self = $.extend($block, {
+        meta: meta,
+        setInfo: setInfo,
+        getInfo: getInfo,
+        destroy: function() {
+            self.html('');
         }
-        
-        $(block).addClass("error");
-        return;
+    });
+
+    self.data('string', self);
+
+    return self;
+
+    function getInfo() {
+        var value = TO.STR( self.find( 'input' ).val() );
+
+        if ( !value.match( TERMINAL.VALUE.STR ) ) {
+            self.addClass("error");
+            return;
+        }
+        self.removeClass("error");
+
+        return new Vertex( self.meta.name, self.meta.specifiers, self.meta.interface_specifier, value );
     }
-    
-    this.putInformation = function( info, block ) {
-        block.querySelector( 'input' ).value = FROM.STR( info.sort );
+
+    function setInfo( info ) {
+        var value = FROM.STR( info.sort );
+        self.find( 'input' ).val( value ? value : "" );
+
+        return self;
     }
-    
+
     function get_string_block( element_metainf, title ) {
         var string_block = document.createElement( 'div' ),
-              label = document.createElement( 'label' ),
-              input = document.createElement( 'input' );
+            label = document.createElement( 'label' ),
+            input = document.createElement( 'input' );
         $(string_block).addClass("string_block");
-        
+
         if ( title ) {
             var ttl = document.createElement( 'span' );
             ttl.textContent = title;
             label.appendChild( ttl );
-            element_metainf.specifiers.push( SPECIFIER.PROXY );
         }
-        
+
         label.appendChild( input );
-        
+
         string_block.appendChild( label );
-        
+
         return string_block;
     }
 }

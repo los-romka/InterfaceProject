@@ -17,6 +17,6 @@
     //#include Integer.class.js
     //#include Real.class.js
     //#include Blob.class.js
-    //#include TerminalValue.class.js
+    //#include Terminal.class.js
     //#include jquery.table-representation.js
 })( jQuery );
