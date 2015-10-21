@@ -7,7 +7,6 @@
     /* init DOM */
     var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
     var form = get_blob_block( meta, label );
-    $block.append( form );
 
     /* init object */
     var self = $.extend($block, {
@@ -19,7 +18,9 @@
         }
     });
 
-    self.data('blob', self);
+    $( form ).children().appendTo( self );
+    self.addClass("blob_block")
+        .data('blob', self);
 
     return self;
 
@@ -46,7 +47,6 @@
         var blob_block = document.createElement( 'div' ),
             label = document.createElement( 'label' ),
             input = document.createElement( 'input' );
-        $(blob_block).addClass("blob_block");
 
         if ( title ) {
             var ttl = document.createElement( 'span' );

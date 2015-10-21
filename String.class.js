@@ -7,7 +7,6 @@
     /* init DOM */
     var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
     var form = get_string_block( meta, label );
-    $block.append( form );
 
     /* init object */
     var self = $.extend($block, {
@@ -19,7 +18,10 @@
         }
     });
 
-    self.data('string', self);
+
+    $( form ).children().appendTo( self );
+    self.addClass("string_block")
+        .data('string', self);
 
     return self;
 
@@ -46,7 +48,6 @@
         var string_block = document.createElement( 'div' ),
             label = document.createElement( 'label' ),
             input = document.createElement( 'input' );
-        $(string_block).addClass("string_block");
 
         if ( title ) {
             var ttl = document.createElement( 'span' );

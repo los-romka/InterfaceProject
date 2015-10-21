@@ -7,7 +7,6 @@
     /* init DOM */
     var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
     var form = get_boolean_block( meta, label );
-    $block.append( form );
 
     /* init object */
     var self = $.extend($block, {
@@ -19,7 +18,9 @@
         }
     });
 
-    self.data('boolean', self);
+    $( form ).children().appendTo( self );
+    self.addClass("boolean_block")
+        .data('boolean', self);
 
     return self;
 
@@ -46,7 +47,7 @@
         var boolean_block = document.createElement( 'div' ),
             label = document.createElement( 'label' ),
             input = document.createElement( 'input' );
-        $(boolean_block).addClass("boolean_block");
+
         input.type = "checkbox";
 
         label.appendChild( input );

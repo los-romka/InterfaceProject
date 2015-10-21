@@ -7,7 +7,6 @@
     /* init DOM */
     var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
     var form = get_terminal_block( meta, label );
-    $block.append( form );
 
     /* init object */
     var self = $.extend($block, {
@@ -19,7 +18,9 @@
         }
     });
 
-    self.data('terminal', self);
+    $( form ).children().appendTo( $block );
+    self.addClass("terminal_block")
+        .data('terminal', self);
 
     return self;
 
@@ -40,9 +41,7 @@
         var terminal_block = document.createElement( 'div' ),
               value_block = document.createElement( 'span' ),
               value = element_metainf.sort.match( TERMINAL.VALUE.REGULAR_EXPR );
-        
-        $(terminal_block).addClass("terminal_block");
-        
+
         value_block.textContent = ( value ? value[0] : "" );
         
         if ( title ) {

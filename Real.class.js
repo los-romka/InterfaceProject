@@ -7,7 +7,6 @@
     /* init DOM */
     var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
     var form = get_real_block( meta, label );
-    $block.append( form );
 
     /* init object */
     var self = $.extend($block, {
@@ -19,7 +18,9 @@
         }
     });
 
-    self.data('real', self);
+    $( form ).children().appendTo( self );
+    self.addClass("real_block")
+        .data('real', self);
 
     return self;
 
@@ -46,7 +47,6 @@
         var real_block = document.createElement( 'div' ),
             label = document.createElement( 'label' ),
             input = document.createElement( 'input' );
-        $(real_block).addClass("real_block");
 
         if ( title ) {
             var ttl = document.createElement( 'span' );

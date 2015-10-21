@@ -122,4 +122,57 @@ Vertex.prototype.putInformation = function( info, block ) {
         case INTERFACE_SPECIFIER.TERMINAL_VALUE : info = ( new TerminalValue( this ) ).putInformation( info, block ); break;
         default : info = []; break;
     }
-};
+}
+
+;function AbstractVertex( $block, meta ) {
+    if (meta.interface_specifier == INTERFACE_SPECIFIER.UNDEFINED) {
+        if ( meta.interface_specifier == INTERFACE_SPECIFIER.UNDEFINED
+            && ( in_array( SPECIFIER.SET, meta.specifiers ) || in_array( SPECIFIER.SETMM, meta.specifiers ) || in_array( SPECIFIER.ONEMM, meta.specifiers ) ) ) {
+            meta.interface_specifier = INTERFACE_SPECIFIER.SET;
+        } else if ( meta.sort && meta.interface_specifier == INTERFACE_SPECIFIER.UNDEFINED ) {
+            switch ( meta.sort ) {
+                case TERMINAL.SORT.STR : meta.interface_specifier = INTERFACE_SPECIFIER.STRING; break;
+                case TERMINAL.SORT.INT : meta.interface_specifier = INTERFACE_SPECIFIER.INTEGER; break;
+                case TERMINAL.SORT.REAL : meta.interface_specifier = INTERFACE_SPECIFIER.REAL; break;
+                case TERMINAL.SORT.BOOL : meta.interface_specifier = INTERFACE_SPECIFIER.BOOLEAN; break;
+                case TERMINAL.SORT.DATE : meta.interface_specifier = INTERFACE_SPECIFIER.DATETIME; break;
+                case TERMINAL.SORT.BLOB : meta.interface_specifier = INTERFACE_SPECIFIER.BLOB; break;
+                default : {
+                    if ( meta.sort.match( TERMINAL.VALUE.STR ) || meta.sort.match( TERMINAL.VALUE.INT )
+                        || meta.sort.match( TERMINAL.VALUE.REAL ) || meta.sort.match( TERMINAL.VALUE.BOOL )
+                        || meta.sort.match( TERMINAL.VALUE.DATE ) || meta.sort.match( TERMINAL.VALUE.BLOB ) ) {
+                        meta.interface_specifier = INTERFACE_SPECIFIER.TERMINAL_VALUE;
+                    } else {
+                        meta.interface_specifier = INTERFACE_SPECIFIER.UNDEFINED;
+                    }
+                    break;
+                }
+            }
+        } else if ( in_array( SPECIFIER.ALT, meta.specifiers ) && meta.interface_specifier == INTERFACE_SPECIFIER.UNDEFINED )  {
+            meta.interface_specifier = INTERFACE_SPECIFIER.ALT;
+        } else if ( !meta.sort && meta.interface_specifier == INTERFACE_SPECIFIER.UNDEFINED )  {
+            meta.interface_specifier = INTERFACE_SPECIFIER.COMPLEX;
+        } else if ( meta.interface_specifier == INTERFACE_SPECIFIER.UNDEFINED ){
+            meta.interface_specifier = INTERFACE_SPECIFIER.UNDEFINED;
+        }
+    }
+
+    var _class;
+
+    switch ( meta.interface_specifier ) {
+        //case INTERFACE_SPECIFIER.TABLE : edit_interface = ( new Table( this ) ).getEditInterface(); break;
+        //case INTERFACE_SPECIFIER.ALT : edit_interface = ( new Alt( this ) ).getEditInterface(); break;
+        //case INTERFACE_SPECIFIER.SET : edit_interface = ( new Set( this ) ).getEditInterface(); break;
+        case INTERFACE_SPECIFIER.COMPLEX :        _class = ComplexVertex; break;
+        case INTERFACE_SPECIFIER.BOOLEAN :        _class = BooleanVertex; break;
+        case INTERFACE_SPECIFIER.DATETIME :       _class = DatetimeVertex; break;
+        case INTERFACE_SPECIFIER.STRING :         _class = StringVertex; break;
+        case INTERFACE_SPECIFIER.INTEGER :        _class = IntegerVertex; break;
+        case INTERFACE_SPECIFIER.REAL :           _class = RealVertex; break;
+        case INTERFACE_SPECIFIER.BLOB :           _class = BlobVertex; break;
+        case INTERFACE_SPECIFIER.TERMINAL_VALUE : _class = TerminalVertex; break;
+        default :                                 _class = function() {return null;}
+    }
+
+    return _class( $block, meta );
+}

@@ -7,7 +7,6 @@
     /* init DOM */
     var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
     var form = get_datetime_block( meta, label );
-    $block.append( form );
 
     /* init object */
     var self = $.extend($block, {
@@ -19,7 +18,9 @@
         }
     });
 
-    self.data('datetime', self);
+    $( form ).children().appendTo( $block );
+    self.addClass("datetime_block")
+        .data('datetime', self);
 
     return self;
 
@@ -46,7 +47,7 @@
         var datetime_block = document.createElement( 'div' ),
             label = document.createElement( 'label' ),
             input = document.createElement( 'input' );
-        $(datetime_block).addClass("datetime_block");
+
         input.type = "datetime-local";
 
         if ( title ) {

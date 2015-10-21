@@ -7,7 +7,6 @@
     /* init DOM */
     var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
     var form = get_integer_block( meta, label );
-    $block.append( form );
 
     /* init object */
     var self = $.extend($block, {
@@ -19,7 +18,9 @@
         }
     });
 
-    self.data('integer', self);
+    $( form ).children().appendTo( $block );
+    self.addClass("integer_block")
+        .data('integer', self);
 
     return self;
 
@@ -46,7 +47,6 @@
         var integer_block = document.createElement( 'div' ),
             label = document.createElement( 'label' ),
             input = document.createElement( 'input' );
-        $(integer_block).addClass("integer_block");
 
         if ( title ) {
             var ttl = document.createElement( 'span' );
