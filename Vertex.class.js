@@ -161,7 +161,7 @@ Vertex.prototype.putInformation = function( info, block ) {
 
     switch ( meta.interface_specifier ) {
         //case INTERFACE_SPECIFIER.TABLE : edit_interface = ( new Table( this ) ).getEditInterface(); break;
-        //case INTERFACE_SPECIFIER.ALT : edit_interface = ( new Alt( this ) ).getEditInterface(); break;
+        case INTERFACE_SPECIFIER.ALT :            _class = AltVertex; break;
         //case INTERFACE_SPECIFIER.SET : edit_interface = ( new Set( this ) ).getEditInterface(); break;
         case INTERFACE_SPECIFIER.COMPLEX :        _class = ComplexVertex; break;
         case INTERFACE_SPECIFIER.BOOLEAN :        _class = BooleanVertex; break;
