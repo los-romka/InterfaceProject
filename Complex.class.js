@@ -1,31 +1,36 @@
-;function Complex( root ) {
+;function ComplexVertex( $block, meta ) {
+    var data = $block.data('complex');
+    if (data) {
+        return data;
+    }
 
-    if ( root.interface_specifier != INTERFACE_SPECIFIER.COMPLEX ) return;
-    
-    var root = clone( root );
-    
-    this.title = ( !in_array( SPECIFIER.PROXY, root.specifiers ) ? root.name : null );
-    this.element_metainf = root;
-    
-    this.complex_block;
-    
-    this.getEditInterface = function() {
-        this.complex_block = get_complex_block( this.element_metainf, this.title );
-        
-        return this.complex_block;
-    };
-    
-    this.getInformation = function( block ) {  
-        var children = block.children, 
-              title_shift = ( block.children[0].nodeName == "H2" ? 1 : 0),        
-              vertex = new Vertex( this.element_metainf.name, 
-                                            this.element_metainf.specifiers,
-                                            this.element_metainf.interface_specifier,
-                                            this.element_metainf.sort );
-         
-        for ( var i = 0; i < this.element_metainf.children.length; i++ ) { 
-            var info = this.element_metainf.children[i].getInformation( children[i + title_shift] );
-            
+    /* init DOM */
+    var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
+    var form = get_complex_block( meta, label );
+
+    /* init object */
+    var self = $.extend($block, {
+        meta: meta,
+        setInfo: setInfo,
+        getInfo: getInfo,
+        destroy: function() {
+            self.html('');
+        }
+    });
+
+    $( form ).children().appendTo( self );
+    self.addClass("complex_block")
+        .data('complex', self);
+
+    return self;
+
+    function getInfo() {
+        var title_shift = ( self.children()[0].nodeName == "H2" ? 1 : 0),
+            vertex = new Vertex( self.meta.name, self.meta.specifiers, self.meta.interface_specifier, self.meta.sort );
+
+        for ( var i = 0; i < self.meta.children.length; i++ ) {
+            var info = AbstractVertex( $( self.children().get(i + title_shift) ), self.meta.children[i] ).getInfo();
+
             if ( !info ) {
                 return;
             } else if ( info.length ) {
@@ -36,46 +41,52 @@
                 vertex.children.push( info );
             }
         }
+
         return vertex;
     }
-    
-    this.putInformation = function( info, block ) {  
-        var children = block.children, 
-              title_shift = ( block.children[0].nodeName == "H2" ? 1 : 0),
-              k = 0;
-              
-        for ( var i = 0; i < this.element_metainf.children.length; i++ ) {
-            if ( in_array( this.element_metainf.children[i].interface_specifier, [INTERFACE_SPECIFIER.SET] ) ) {
+
+    function setInfo( info ) {
+        var title_shift = self.children().eq(0).is('h2') ? 1 : 0,
+            k = 0,
+            elem;
+
+        for ( var i = 0; i < self.meta.children.length; i++ ) {
+            if ( in_array( self.meta.children[i].interface_specifier, [INTERFACE_SPECIFIER.SET] ) ) {
                 var elementsOfSet = [];
-                while ( info.children[i + k] && this.element_metainf.children[i].name == info.children[i + k].name ) {
+                while ( info.children[i + k] && self.meta.children[i].name == info.children[i + k].name ) {
                     elementsOfSet.push( info.children[i + k] );
                     k++;
                 }
                 k--;
-                this.element_metainf.children[i].putInformation( elementsOfSet, children[i + title_shift] );
+
+                elem = elementsOfSet;
             } else {
-                this.element_metainf.children[i].putInformation( info.children[i + k], children[i + title_shift] );
+                elem = info.children[i + k];
             }
+
+            AbstractVertex( $( self.children().get(i + title_shift) ), self.meta.children[i] ).setInfo( elem );
         }
+
+        return self;
     }
-    
+
     function get_complex_block( element_metainf, title ) {
         var complex_block = document.createElement( 'div' );
-        $(complex_block).addClass("complex_block");
-        
+
         if ( title ) {
             var ttl = document.createElement( 'h2' );
             ttl.textContent = title;
             complex_block.appendChild( ttl );
         }
-        
-        if ( !element_metainf ) return complex_block;
-        
+
         for ( var i = 0; i < element_metainf.children.length; i++ ) {
-            var element = element_metainf.children[i].getEditInterface();   
+            var element = document.createElement( 'div' );
+
+            AbstractVertex( $(element), element_metainf.children[i]);
+
             complex_block.appendChild( element );
         }
-        
+
         return complex_block;
     }
 }

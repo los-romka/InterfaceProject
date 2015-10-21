@@ -42,3 +42,15 @@
 .table-representation {
     background-color: white;
 }
+
+.table-representation .complex_block {
+    border: 1px dashed #eee;
+    padding: 10px;
+}
+
+.table-representation h2 {
+    padding: 0;
+    margin: 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
