@@ -4,10 +4,6 @@
         return data;
     }
 
-    /* init DOM */
-    var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
-    var form = get_datetime_block( meta, label );
-
     /* init object */
     var self = $.extend($block, {
         meta: meta,
@@ -17,6 +13,10 @@
             self.html('');
         }
     });
+
+    /* init DOM */
+    var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
+    var form = get_datetime_block( meta, label );
 
     $( form ).children().appendTo( $block );
     self.addClass("datetime_block")

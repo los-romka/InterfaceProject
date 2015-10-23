@@ -4,10 +4,6 @@
         return data;
     }
 
-    /* init DOM */
-    var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
-    var form = get_string_block( meta, label );
-
     /* init object */
     var self = $.extend($block, {
         meta: meta,
@@ -18,6 +14,9 @@
         }
     });
 
+    /* init DOM */
+    var label = ( !in_array( SPECIFIER.PROXY, meta.specifiers ) ? meta.name : null );
+    var form = get_string_block( meta, label );
 
     $( form ).children().appendTo( self );
     self.addClass("string_block")
