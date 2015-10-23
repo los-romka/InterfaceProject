@@ -50,8 +50,8 @@
                 list[i].selected = true;
                 $( list ).trigger( 'change' );
 
-                /** TODO: list? */
-                if ( self.meta.children[i].interface_specifier == INTERFACE_SPECIFIER.SET ) {
+                /** TODO: setmm?, listmm? */
+                if ( in_array(self.meta.children[i].interface_specifier, [INTERFACE_SPECIFIER.SET, INTERFACE_SPECIFIER.LIST]) ) {
                     AbstractVertex( $( self.find( 'div' ) ), self.meta.children[i] ).setInfo( info.children );
                 } else {
                     AbstractVertex( $( self.find( 'div' ) ), self.meta.children[i] ).setInfo( info.children[0] );

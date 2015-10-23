@@ -51,7 +51,9 @@
             elem;
 
         for ( var i = 0; i < self.meta.children.length; i++ ) {
-            if ( in_array( self.meta.children[i].interface_specifier, [INTERFACE_SPECIFIER.SET] ) ) {
+
+            /** TODO: setmm?, listmm? */
+            if ( in_array(self.meta.children[i].interface_specifier, [INTERFACE_SPECIFIER.SET, INTERFACE_SPECIFIER.LIST]) ) {
                 var elementsOfSet = [];
                 while ( info.children[i + k] && self.meta.children[i].name == info.children[i + k].name ) {
                     elementsOfSet.push( info.children[i + k] );

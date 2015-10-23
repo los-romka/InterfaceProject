@@ -23,8 +23,10 @@ SPECIFIER = {
     "ONEMM" : "~onemm",
     "COPY" : "~copy",
     "COPYMM" : "~copymm",
-    "SET" : "~list",
-    "SETMM" : "~listmm",
+    "SET" : "~set",
+    "SETMM" : "~setmm",
+    "LIST" : "~list",
+    "LISTMM" : "~listmm",
     "PROXY" : "~proxy",
     "ALT" : "~ALT",
     "REGULAR_EXPR" : /~[\w]*\b/g
