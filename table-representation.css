@@ -1,5 +1,6 @@
 .table-representation table {
     border-collapse: collapse;
+    margin-bottom: -1px;
 }
 .table-representation table td, table th {
     text-align: center;
@@ -7,7 +8,7 @@
 }
 
 .table-representation table th {
-    padding: 5px;
+    padding: 1px;
 }
 
 .table-representation input {
@@ -51,6 +52,47 @@
 .table-representation h2 {
     padding: 0;
     margin: 0;
-    margin-bottom: 10px;
     border-bottom: 1px solid #eee;
+}
+
+
+.table-representation.collection_horizontal th>button,
+.table-representation.collection_horizontal td>button,
+.table-representation .collection_horizontal th>button,
+.table-representation .collection_horizontal td>button {
+    width: 100%;
+}
+
+.table-representation.collection_block,
+.table-representation .collection_block {
+    display: inline-block;
+}
+
+.table-representation button {
+    border: 1px solid #777;
+    background-color: #EEE;
+    color: black;
+}
+
+.table-representation button:hover {
+    background-color: #CECECE;
+}
+
+.table-representation button:active {
+    border-style: solid;
+    background-color: #C7C7C7;
+    outline: none;
+}
+
+.table-representation button:focus {
+    border-style: solid;
+    outline: none;
+}
+
+.table-representation div {
+    width: calc(100% - 9px);
+}
+
+.table-representation [disabled="disabled"] {
+    display: none !important;
 }

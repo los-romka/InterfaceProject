@@ -9,6 +9,7 @@
     //#include IrParser.class.js
     //#include Table.class.js
     //#include Set.class.js
+    //#include Collection.class.js
     //#include Complex.class.js
     //#include Alt.class.js
     //#include Boolean.class.js

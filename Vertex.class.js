@@ -6,6 +6,18 @@
     this.children = [];
 }
 
+Vertex.prototype.simplifyCollection = function() {
+    if ( this.specifiers ) {
+        for ( var i = this.specifiers.length - 1; i >= 0 ; i-- ) {
+            if ( in_array(this.specifiers[i], [SPECIFIER.SET, SPECIFIER.SETMM, SPECIFIER.LIST, SPECIFIER.LIST, SPECIFIER.ONEMM]) ) {
+                this.specifiers.splice( i, 1 );
+            }
+        }
+    }
+
+    this.interface_specifier = INTERFACE_SPECIFIER.UNDEFINED;
+};
+
 Vertex.prototype.resetSpecifiers = function() {
     if ( this.specifiers ) {
         for ( var i = this.specifiers.length - 1; i >= 0 ; i-- ) {
@@ -160,9 +172,11 @@ Vertex.prototype.putInformation = function( info, block ) {
     var _class;
 
     switch ( meta.interface_specifier ) {
-        //case INTERFACE_SPECIFIER.TABLE : edit_interface = ( new Table( this ) ).getEditInterface(); break;
         case INTERFACE_SPECIFIER.ALT :            _class = AltVertex; break;
-        //case INTERFACE_SPECIFIER.SET : edit_interface = ( new Set( this ) ).getEditInterface(); break;
+        case INTERFACE_SPECIFIER.SET :            _class = CollectionVertex; break;
+        case INTERFACE_SPECIFIER.HORIZONTAL :     _class = CollectionVertex; break;
+        case INTERFACE_SPECIFIER.VERTICAL :       _class = CollectionVertex; break;
+
         case INTERFACE_SPECIFIER.COMPLEX :        _class = ComplexVertex; break;
         case INTERFACE_SPECIFIER.BOOLEAN :        _class = BooleanVertex; break;
         case INTERFACE_SPECIFIER.DATETIME :       _class = DatetimeVertex; break;
