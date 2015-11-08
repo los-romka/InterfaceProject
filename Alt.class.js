@@ -41,6 +41,10 @@
     function setInfo( info ) {
         var list = self.find( 'select' );
 
+        if (info instanceof Vertex) {
+            sortArrayByMeta( info.children, self.meta.children);
+        }
+
         for ( var i = 0; i < list.length; i++ ) {
             if ( ( info.children[0].name != "" && self.meta.children[i].name == info.children[0].name )
                 || ( info.children[0].name == "" && self.meta.children[i].sort == info.children[0].sort )
@@ -49,8 +53,7 @@
                 list[i].selected = true;
                 $( list ).trigger( 'change' );
 
-                /** TODO: setmm?, listmm? */
-                if ( in_array(self.meta.children[i].interface_specifier, [INTERFACE_SPECIFIER.SET, INTERFACE_SPECIFIER.LIST]) ) {
+                if ( self.meta.children[i].interface_specifier == INTERFACE_SPECIFIER.COLLECTION ) {
                     AbstractVertex( $( self.find( 'div' ) ), self.meta.children[i] ).setInfo( info.children );
                 } else {
                     AbstractVertex( $( self.find( 'div' ) ), self.meta.children[i] ).setInfo( info.children[0] );

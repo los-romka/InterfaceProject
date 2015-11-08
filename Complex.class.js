@@ -50,10 +50,14 @@
             k = 0,
             elem;
 
+        if (info instanceof Vertex) {
+            sortArrayByMeta( info.children, self.meta.children);
+        }
+
+
         for ( var i = 0; i < self.meta.children.length; i++ ) {
 
-            /** TODO: setmm?, listmm? */
-            if ( in_array(self.meta.children[i].interface_specifier, [INTERFACE_SPECIFIER.SET, INTERFACE_SPECIFIER.LIST]) ) {
+            if ( self.meta.children[i].interface_specifier == INTERFACE_SPECIFIER.COLLECTION ) {
                 var elementsOfSet = [];
                 while ( info.children[i + k] && self.meta.children[i].name == info.children[i + k].name ) {
                     elementsOfSet.push( info.children[i + k] );

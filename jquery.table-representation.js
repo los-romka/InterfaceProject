@@ -8,16 +8,30 @@ $.fn.tableRepresentation = function(options) {
         orientation: 'HORIZONTAL'
     }, options || {});
 
-
-    var parser = IrParser();
-    var meta = parser.toJson( this.data('tpir-meta') );
-    var info = parser.toJson( this.data('tpir-info') );
-
-    meta.interface_specifier = INTERFACE_SPECIFIER[ settings.orientation ];
-
     var self = $( this );
 
-    AbstractVertex( self, meta).setInfo( info );
+    var parser = IrParser();
+    var meta = parser.toJson( self.data('tpir-meta') );
+
+    meta.transformToCollection( COLLECTION_ORIENTATION[ settings.orientation ] );
+
+    AbstractVertex( self, meta );
+
+    var info;
+
+    if ( info = self.data('tpir-info') ) {
+        self.setInfo( parser.toJson( info ) );
+    }
+
+    /* INFO DUMP --> */
+    var $pre = $('<pre></pre>').insertAfter(self);
+
+    setInterval(function() {
+        $pre.text(parser.toIr( self.getInfo() ));
+    },5000);
+    /* <-- END INFO DUMP */
+
+    console.log('hello world');
 
     self.data('table-representation', self);
 

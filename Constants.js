@@ -1,8 +1,5 @@
 INTERFACE_SPECIFIER = {
-    "HORIZONTAL" : "#HORIZONTAL#",
-    "VERTICAL" : "#VERTICAL#",
-    "COMPLEX" : "#COMPLEX#",
-    "SET" : "#SET#",
+    "COLLECTION": "#COLLECTION#",
     "STRING" : "#STRING#",
     "INTEGER" : "#INTEGER#",
     "REAL" : "#REAL#",
@@ -10,9 +7,20 @@ INTERFACE_SPECIFIER = {
     "DATETIME" : "#DATETIME#",
     "BLOB" : "#BLOB#",
     "ALT" : "#ALT#",
+    "COMPLEX" : "#COMPLEX#",
     "TERMINAL_VALUE" : "#TERMINAL_VALUE#",
     "UNDEFINED" : "",
     "REGULAR_EXPR" : /#[\w]*#/g
+};
+
+COLLECTION_ORIENTATION = {
+    "HORIZONTAL": "HORIZONTAL",
+    "VERTICAL": "VERTICAL"
+};
+
+COLLECTION_TYPE = {
+    "LIST" : "LIST",
+    "SET" : "SET"
 };
 
 SPECIFIER = {
@@ -20,12 +28,10 @@ SPECIFIER = {
     "ONEMM" : "~onemm",
     "COPY" : "~copy",
     "COPYMM" : "~copymm",
-    //"SET" : "~set",
-    //"SETMM" : "~setmm",
-    //"LIST" : "~list",
-    //"LISTMM" : "~listmm",
-    "SET" : "~list",
-    "SETMM" : "~listmm",
+    "SET" : "~set",
+    "SETMM" : "~setmm",
+    "LIST" : "~list",
+    "LISTMM" : "~listmm",
     "PROXY" : "~proxy",
     "ALT" : "~ALT",
     "REGULAR_EXPR" : /~[\w]*\b/g

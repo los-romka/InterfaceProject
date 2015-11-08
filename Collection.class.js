@@ -7,6 +7,7 @@
     /* init object */
     var self = $.extend($block, {
         meta: meta,
+        element_meta: clone( meta ),
         setInfo: setInfo,
         getInfo: getInfo,
         destroy: function() {
@@ -14,69 +15,73 @@
         }
     });
 
+    var defaultConfig = {
+        ORIENTATION: COLLECTION_ORIENTATION.HORIZONTAL
+    };
+
+    var config = $.extend(defaultConfig, meta.interface_params);
+
     /* init DOM */
-    var _type = in_array(meta.interface_specifier, [INTERFACE_SPECIFIER.HORIZONTAL, INTERFACE_SPECIFIER.VERTICAL ] ) ?  meta.interface_specifier : INTERFACE_SPECIFIER.HORIZONTAL;
-    var _traversal = get_first_traversal( self.meta )
+    var _orientation = in_array(config.ORIENTATION, [COLLECTION_ORIENTATION.HORIZONTAL,COLLECTION_ORIENTATION.VERTICAL]) ?  config.ORIENTATION : COLLECTION_ORIENTATION.HORIZONTAL;
+    var _type = intersect( self.meta.specifiers, [ SPECIFIER.SET, SPECIFIER.SETMM ] ).length > 0
+        ? COLLECTION_TYPE.SET
+        : COLLECTION_TYPE.LIST;
+
+    self.element_meta.simplifyCollection();
+
+    var _traversal = get_first_traversal( self.element_meta );
     var _leafs = get_leafs( _traversal );
 
-    var _width = get_width( self.meta );
-    var _height = get_height( self.meta );
+    var _width = get_width( self.element_meta );
+    var _height = get_height( self.element_meta );
 
-    self.meta.level = 0;
-    self.meta.width = _width;
-    self.meta.height = _height;
+    self.element_meta.level = 0;
+    self.element_meta.width = _width;
+    self.element_meta.height = _height;
 
-    if ( in_array( SPECIFIER.ONE, self.meta.specifiers ) || in_array( SPECIFIER.COPY, self.meta.specifiers ) ) {
+
+    if ( intersect( self.meta.specifiers, [ SPECIFIER.ONE, SPECIFIER.COPY ] ).length > 0 ) {
         self.min_elements = 1;
         self.max_elements = 1;
-    } else if ( in_array( SPECIFIER.ONEMM, self.meta.specifiers ) || in_array( SPECIFIER.COPYMM, self.meta.specifiers ) ) {
+    } else if ( intersect( self.meta.specifiers, [ SPECIFIER.ONEMM, SPECIFIER.COPYMM ] ).length > 0 ) {
         self.min_elements = 0;
         self.max_elements = 1;
-    } else if ( in_array( SPECIFIER.SET, self.meta.specifiers ) ) {
+    } else if ( intersect( self.meta.specifiers, [ SPECIFIER.SET, SPECIFIER.LIST ] ).length > 0 ) {
         self.min_elements = 1;
         self.max_elements = 100000;
-    } else if ( in_array( SPECIFIER.SETMM, self.meta.specifiers ) ) {
+    } else if ( intersect( self.meta.specifiers, [ SPECIFIER.SETMM, SPECIFIER.LISTMM ] ).length > 0 ) {
         self.min_elements = 0;
         self.max_elements = 100000;
     }
-    /** TODO: add LIST support */
 
     self.elements_count = 0;
 
-    var matrix = get_matrix( _type, _width, _height, _traversal );
+    var matrix = get_matrix( _orientation, _width, _height, _traversal );
 
-    var form = get_collection_block( self.meta, matrix );
+    var form = get_collection_block( matrix );
 
     $( form ).children().appendTo( self );
     self.addClass("collection_block")
-        .addClass( _type == INTERFACE_SPECIFIER.HORIZONTAL ? "collection_horizontal" : "collection_vertical" )
+        .addClass( _orientation == COLLECTION_ORIENTATION.HORIZONTAL ? "collection_horizontal" : "collection_vertical" )
         .data('collection', self);
+
+    while ( self.elements_count < self.min_elements ) {
+        add_element();
+    }
+
+    update_buttons();
 
     return self;
 
     function getInfo() {
         var list = self.find( '>table' ),
-            collection = new Vertex( self.meta.name, [], "", null ),
-            size = get_size_from_blocks( _type, _height, list ),
-            list_children;
+            collection = new Vertex( self.element_meta.name, [], "", null ),
+            size = get_size_from_blocks( _orientation, _height, list );
 
         for ( var i = 0; i < size ; i++ ) {
-            var leafs_vals = [];
+            var leafs_blocks = get_leafs_blocks(list, size, i);
 
-            if ( _type == INTERFACE_SPECIFIER.HORIZONTAL ) {
-                list_children = list.find('>tr:nth-child(' + (i + _height + 1) + ')>*');
-
-                for ( var j = 0; j < list_children.length; j++ ) {
-                    leafs_vals.push( list_children.eq(j).find('>div') );
-                }
-            } else {
-                for ( var j = _width - 1; j >= 0 ; j-- ) {
-                    list_children = list.find('>tr:nth-child(' + ( j + 1 ) + ')>*');
-                    leafs_vals.push( list_children.eq(list_children.length - size + i - ( j === 0 ? 1 : 0) ).find( 'div' ) );
-                }
-            }
-
-            var info = merge_leafs_val_with_meta( leafs_vals, self.meta );
+            var info = merge_leafs_val_with_meta( leafs_blocks, self.element_meta );
 
             collection.children.push( info );
         }
@@ -85,19 +90,16 @@
     }
 
     function setInfo( info ) {
-        var title_shift = ( self.children().eq(0).is('h1') ? 1 : 0 ),
-            elementsOfSet = [],
+        var elementsOfSet = [],
             list = self.find( '>table' ),
-            size = get_size_from_blocks( _type, _height, list ),
-            leafs_meta = get_leafs( get_first_traversal( clone( self.meta ) )),
-            list_children;
+            size = get_size_from_blocks( _orientation, _height, list );
 
         if (info instanceof Vertex) {
             info = [info];
         }
 
         var k = 0;
-        while ( info[k] && self.meta.name == info[k].name ) {
+        while ( info[k] && self.element_meta.name == info[k].name ) {
             elementsOfSet.push( info[k] );
             k++;
         }
@@ -107,87 +109,103 @@
             size++;
         }
 
-        var element_meta = clone(self.meta);
-        element_meta.simplifyCollection();
-
         for ( var i = 0; i < size ; i++ ) {
-            var leafs_blocks = [];
+            var leafs_blocks = get_leafs_blocks(list, size, i);
 
-            if ( _type == INTERFACE_SPECIFIER.HORIZONTAL ) {
-                list_children = list.find('>tr:nth-child(' + (i + _height + 1) + ')>*');
-                for ( var j = 0; j < list_children.length; j++ ) {
-                    leafs_blocks.push( list_children.eq(j).find('>div') );
-                }
-            } else {
-                for ( var j = _width - 1; j >= 0 ; j-- ) {
-                    list_children = list.find('>tr:nth-child(' + ( j + 1 ) + ')>*');
-                    leafs_blocks.push( list_children.eq(list_children.length - size + i - ( j === 0 ? 1 : 0) ).find( 'div' ) );
-                }
-            }
-
-            put_info_leafs_vals( elementsOfSet[i], leafs_blocks, element_meta );
+            put_info_leafs_vals( elementsOfSet[i], leafs_blocks, self.element_meta );
         }
 
         return self;
     }
 
-    function get_collection_block( element_metainf, matrix ) {
+    function get_collection_block( matrix ) {
         var table_block = document.createElement( 'div' );
 
         table_block.appendChild( form_table( matrix ) );
 
-        var new_add_btn = document.createElement( 'button' );
-        new_add_btn.textContent = '+ Добавить';
-        new_add_btn.onclick = add_element;
-        $( new_add_btn ).addClass('add');
+        var add_btn = generate_add_button();
 
-        /** for HORIZONTAL */
-        if (_type == INTERFACE_SPECIFIER.HORIZONTAL) {
-            var tr = table_block.querySelector('table>tr:last-child');
+        /* append HORIZONTAL CONTROL HEADINGS for HORIZONTAL orientation */
+        if (_orientation == COLLECTION_ORIENTATION.HORIZONTAL) {
+            if ( _type == COLLECTION_TYPE.SET ) {
+                $( document.createElement( 'th' ) )
+                    .attr( 'rowSpan', _height )
+                    .insertBefore( $( table_block ).find( '>table>tr:first-child>*:first-child' ) );
+            }
 
-            var td = document.createElement( 'td' );
-            $( td ).attr( 'colSpan', '100%' );
+            $( document.createElement( 'th' ) )
+                .attr( 'rowSpan', _height )
+                .insertAfter( $( table_block ).find( '>table>tr:first-child>*:last-child' ) );
 
-            tr.appendChild( td );
-            td.appendChild( new_add_btn );
+        /* append VERTICAL CONTROL HEADINGS for VERTICAL orientation */
         } else {
-            var tr = table_block.querySelector('table>tr:first-child');
+            var tr_name = document.createElement( 'tr' );
+            var th_name = document.createElement( 'th' );
+            tr_name.appendChild(th_name);
 
-            var th = document.createElement( 'th' );
-            $( th ).attr( 'rowSpan', _height + 1 );
+            var tr_control = document.createElement( 'tr' );
+            var th_control = document.createElement( 'th' );
+            tr_control.appendChild(th_control);
 
-            tr.appendChild( th );
-            th.appendChild( new_add_btn );
+            if ( _type == COLLECTION_TYPE.SET ) {
+                $( th_name )
+                    .attr( 'colSpan', _width );
+                $( tr_name )
+                    .attr( 'colSpan', _width )
+                    .insertBefore( $( table_block ).find( '>table>tr:first-child' ) );
+            }
+
+            $( th_control )
+                .attr( 'colSpan', _width );
+            $( tr_control )
+                .insertAfter( $( table_block ).find( '>table>tr:last-child' ) );
         }
 
-        while ( self.elements_count < self.min_elements ) {
-            add_element();
+        /* append ADD button for HORIZONTAL orientation */
+        var tr, head_part;
+
+        if (_orientation == COLLECTION_ORIENTATION.HORIZONTAL) {
+            tr = table_block.querySelector('table>tr:last-child');
+            head_part = document.createElement( 'td' );
+            $( head_part ).attr( 'colSpan', '100%' );
+
+            /* append ADD button for VERTICAL orientation */
+        } else {
+            tr = table_block.querySelector('table>tr:first-child');
+            head_part = document.createElement( 'th' );
+            $( head_part ).attr( 'rowSpan', _height + 1 + ( _type == COLLECTION_TYPE.SET ? 1 : 0 ) );
         }
 
-        update_buttons();
+        tr.appendChild( head_part );
+        head_part.appendChild( add_btn );
 
         return table_block;
     }
 
-    function sortArrayByMeta(leafs, leafs_meta) {
-        return leafs.sort(function(a, b) {
-            var aIndex = leafs_meta.findIndex(function(element) {
-                return element.name === a.name;
-            });
+    function get_leafs_blocks(list, size, i) {
+        var leafs_blocks = [],
+            list_children, j;
 
-            var bIndex = leafs_meta.findIndex(function(element) {
-                return element.name === b.name;
-            });
+        if ( _orientation == COLLECTION_ORIENTATION.HORIZONTAL ) {
+            list_children = list.find('>tr:nth-child(' + (i + _height + 1) + ')>*');
 
-            return aIndex - bIndex;
-        });
+            for ( j = _type == COLLECTION_TYPE.SET ? 1 : 0; j < list_children.length - 1; j++ ) {
+                leafs_blocks.push( list_children.eq(j).find('>div') );
+            }
+        } else {
+            for ( j = _width + (_type == COLLECTION_TYPE.SET ? 0 : -1); j >= (_type == COLLECTION_TYPE.SET ? 1 : 0); j-- ) {
+                list_children = list.find('>tr').eq(j).children();
+                leafs_blocks.push( list_children.eq(list_children.length - size + i - ( j === 0 ? 1 : 0) ).find( 'div' ) );
+            }
+        }
+
+        return leafs_blocks;
     }
 
-    /* TODO: refactor */
     function get_size_from_blocks( type, height, table ) {
         var size = 0;
 
-        if ( type == INTERFACE_SPECIFIER.HORIZONTAL ) {
+        if ( type == COLLECTION_ORIENTATION.HORIZONTAL ) {
             size = table.children().length - height - 1;
         } else {
             var table_children = table.find( '>tr:first-child>*' );
@@ -201,6 +219,7 @@
         return size;
     }
 
+    /** TODO: refactor */
     function put_info_leafs_vals( info, leafs_blocks, element_metainf ) {
         var traversal_meta = [],
             queue_meta = [],
@@ -227,7 +246,7 @@
                 for ( var i = 0; i < current_meta.children.length; i++ ) {
                     queue_meta.push( current_meta.children[i] );
 
-                    if ( in_array( current_meta.children[i].interface_specifier, [INTERFACE_SPECIFIER.SET, INTERFACE_SPECIFIER.LIST] ) ) {
+                    if ( current_meta.children[i].interface_specifier == INTERFACE_SPECIFIER.COLLECTION ) {
                         var elementsofset = [];
                         while ( current_info.children[i + k] && current_meta.children[i].name == current_info.children[i + k].name ) {
                             elementsofset.push( current_info.children[i + k] );
@@ -255,60 +274,67 @@
             traversal_info.push( info );
         }
 
-        /** FUCKING MAGIC OR SOME ITERATIONS */
-        var magic_meta = clone(traversal_meta);
+        /** TODO: FUCKING MAGIC OR SOME ITERATIONS */
 
         for ( var i = 0; i < traversal_meta.length; i++ ) {
-            AbstractVertex( $( leafs_blocks.pop() ), magic_meta[i] ).setInfo( traversal_info[i] );
+            AbstractVertex( $( leafs_blocks.pop() ), traversal_meta[i] ).setInfo( traversal_info[i] );
         }
     }
 
     function merge_leafs_val_with_meta( leafs_vals, element_metainf ) {
         var vertex = clone( element_metainf ),
-            traversal = get_first_traversal( vertex );
+            queue = [],
+            current, i;
 
-        if ( traversal.length == 1 ) {
-            var value = leafs_vals.shift(),
-                current = traversal.pop();
+        queue.push( vertex );
 
-            current.simplifyCollection();
+        while ( queue.length ) {
+            current = queue.pop();
 
-            return AbstractVertex( $( value ), current ).getInfo();
-        }
+            if ( !isHeaderVertex( current ) ) {
+                var info = AbstractVertex( $( leafs_vals.pop() ), current ).getInfo();
 
-        while ( traversal.length ) {
+                if ( info ) {
+                    if ( info.length >= 0 ) {
+                        var index = 0,
+                            parent = current.parent;
 
-            var parent = traversal.pop();
-            if ( !isHeaderVertex( parent ) ) continue;
+                        while( parent.children[index].name != current.name ) {
+                            index++;
+                        }
 
-            for ( var i = 0; i < parent.children.length; i++ ) {
-                var current = parent.children[i];
-                if ( !isHeaderVertex( current ) ) {
-                    var value = leafs_vals.shift(),
-                        info = AbstractVertex( $( value ), current ).getInfo();
+                        if (info.length === 0) {
+                            parent.children.splice(index, 1);
+                        } else {
+                            parent.children[index] = info[0];
+                            index++;
+                        }
 
-                    /* if an error */
-                    if (!info) {
-                        continue;
-                    }
 
-                    if ( info.length >= 0) {
-                        parent.children[i] = info;
+                        for (i = 1; i < info.length; i++) {
+                            parent.children.splice(index, 0, info[i]);
+                            index++;
+                        }
                     } else {
                         current.sort = info.sort;
                         current.children = info.children;
                     }
+                }
+            } else {
+                for ( i = 0; i < current.children.length; i++ ) {
+                    current.children[i].parent = current;
+                    queue.push( current.children[i] );
                 }
             }
         }
 
         return vertex;
     }
-
+    /** TODO: refactor */
     function add_element() {
         self.elements_count++;
 
-        if ( self.meta.sort ) {
+        if ( self.element_meta.sort ) {
             var td = document.createElement( 'td' ),
                 block = document.createElement( 'div' );
 
@@ -316,20 +342,26 @@
                 _leafs[0].specifiers.push( SPECIFIER.PROXY );
             }
 
-            _leafs[0].simplifyCollection();
-
             $( td ).append( AbstractVertex( $( block ), _leafs[0] ) );
 
-            if ( _type == INTERFACE_SPECIFIER.HORIZONTAL ) {
+            if ( _orientation == COLLECTION_ORIENTATION.HORIZONTAL ) {
                 var tr = document.createElement( 'tr' );
                 tr.appendChild( td );
 
                 $( tr ).insertBefore( self.find( '>table>tr:last-child' ) );
+                append_horizontal_controls();
             } else {
-                $( td ).insertBefore( self.find( '>table>tr:first-child>th:last-child' ) );
+                append_vertical_controls();
+
+                if ( _type == COLLECTION_TYPE.SET ) {
+                    $( td ).insertAfter( self.find( '>table>tr:nth-child(2)>*:last-child' ) );
+                } else {
+                    $( td ).insertBefore( self.find( '>table>tr:first-child>*:last-child' ) );
+                }
             }
         } else {
             var tr = document.createElement( 'tr' );
+
             for ( var i =  _leafs.length - 1; i >= 0; i-- ) {
                 var td = document.createElement( 'td' ),
                     block = document.createElement( 'div' );
@@ -340,53 +372,123 @@
 
                 $( td ).append( AbstractVertex( $( block ), _leafs[i] ) );
 
-                if ( _type == INTERFACE_SPECIFIER.HORIZONTAL ) {
+                if ( _orientation == COLLECTION_ORIENTATION.HORIZONTAL ) {
                     tr.appendChild( td );
                 } else {
-                    //
                     if ( i == 0 ) {
-                        $( td ).insertBefore( self.find( '>table>tr:first-child>th:last-child' ) );
+                        if ( _type == COLLECTION_TYPE.SET ) {
+                            $( td ).insertAfter( self.find( '>table>tr:nth-child(2)>*:last-child' ) );
+                        } else {
+                            $( td ).insertBefore( self.find( '>table>tr:first-child>*:last-child' ) );
+                        }
                     } else {
-                        self.find( '>table' ).children().eq(i).append( td );
+                        self.find( '>table' ).children().eq(i + ( _type == COLLECTION_TYPE.SET ? 1 : 0)).append( td );
                     }
                 }
             }
 
-            if ( _type == INTERFACE_SPECIFIER.HORIZONTAL ) {
+            if ( _orientation == COLLECTION_ORIENTATION.HORIZONTAL ) {
                 $( tr ).insertBefore( self.find( '>table>tr:last-child' ) );
+                append_horizontal_controls();
+            } else {
+                append_vertical_controls();
             }
         }
 
         update_buttons();
-
-        /** TODO: addbtn callback */
     }
 
-    /* TODO: refactor */
-    function get_delete_button( table_class ) {
-        var btn = new Button( "-", function() {
-            table_class.elements_count--;
+    function remove_horizontal_element($tr) {
+        return function() {
+            self.elements_count--;
+            update_buttons();
+            $tr.remove();
+        }
+    }
 
-            if ( _type == INTERFACE_SPECIFIER.HORIZONTAL ) {
-                table_class.table_block.querySelector( 'table' ).lastChild.remove();
-            } else {
-                for ( var i = 0; i < table_class.table_block.querySelector( 'table' ).children.length; i++ ) {
-                    table_class.table_block.querySelector( 'table' ).children[i].lastChild.remove();
-                }
+    function remove_vertical_element() {
+        var $td = $( this ).parent();
+        var i = -1;
+
+        while ($td.next().length > 0) {
+            $td = $td.next();
+            i--;
+        }
+
+        var rows = self.find('>table>tr');
+
+        for (var j = 0; j < rows.length; j++) {
+            rows.eq(j).children().eq(i - ( j === 0 ? 1 : 0)).remove();
+        }
+
+        self.elements_count--;
+        update_buttons();
+    }
+
+    function generate_add_button() {
+        var add_btn = document.createElement( 'button' );
+        add_btn.textContent = '+ Добавить';
+        add_btn.onclick = add_element;
+        $( add_btn ).addClass('add');
+
+        return add_btn;
+    }
+
+    function create_remove_button() {
+        var remove_btn = document.createElement('button');
+        remove_btn.textContent = '- Удалить';
+        $(remove_btn).addClass('remove');
+
+        return remove_btn;
+    }
+
+    function append_horizontal_controls() {
+        if ( _orientation == COLLECTION_ORIENTATION.HORIZONTAL ) {
+            var remove_btn_block = document.createElement('td');
+            var remove_btn = create_remove_button();
+            remove_btn_block.appendChild(remove_btn);
+
+            var $tr = self.find('>table>tr:last-child').prev();
+
+            if (_type === COLLECTION_TYPE.SET) {
+                $( document.createElement('td') )
+                    .insertBefore($tr.find('>*:first-child'));
             }
 
-            update_buttons( table_class );
-        });
+            remove_btn.onclick = remove_horizontal_element($tr);
 
-        return btn;
+            $(remove_btn_block)
+                .insertAfter($tr.find('>*:last-child'));
+        }
+    }
+
+    function append_vertical_controls() {
+        if ( _type === COLLECTION_TYPE.SET ) {
+            $( document.createElement('td') )
+                .insertBefore( self.find( '>table>tr:first-child>*:last-child' ) );
+        }
+
+        var remove_btn_block = document.createElement('td');
+        var remove_btn = create_remove_button();
+        remove_btn_block.appendChild(remove_btn);
+
+        remove_btn.onclick = remove_vertical_element;
+
+        $( remove_btn_block )
+            .insertAfter( self.find( '>table>tr:last-child>*:last-child' ) );
     }
 
     function update_buttons() {
         getAddButton().attr( 'disabled', !( self.elements_count < self.max_elements ) );
+        getRemoveButtons().attr( 'disabled', !( self.elements_count > self.min_elements ) );
     }
 
     function getAddButton() {
         return self.find( '>table>tr>*>.add' );
+    }
+
+    function getRemoveButtons() {
+        return self.find( '>table>tr>*>.remove' );
     }
 
     function form_table( matrix ) {
@@ -412,7 +514,7 @@
     function get_matrix( type, width, height, traversal ) {
         traversal = clone( traversal );
 
-        return ( ( type == INTERFACE_SPECIFIER.VERTICAL )
+        return ( ( type == COLLECTION_ORIENTATION.VERTICAL )
             ? get_vertical_matrix( width, height, traversal )
             : get_horizontal_matrix( width, height, traversal ) );
     }
@@ -478,11 +580,17 @@
     }
 
     function get_leafs( traversal ) {
-        var leafs = clone( traversal );
+        var leafs = [];
 
-        for ( var i = leafs.length - 1; i >= 0; i-- ) {
-            if ( isHeaderVertex( leafs[i] ) ) {
-                leafs.splice( i, 1 );
+        /* for simple vertex */
+        if (traversal.length === 1) {
+            return [traversal[0]];
+        }
+
+        /* for complex vertex */
+        for ( var i = 0; i < traversal.length; i++ ) {
+            if ( !isHeaderVertex( traversal[i] ) ) {
+                leafs.push(traversal[i]);
             }
         }
 
@@ -517,7 +625,6 @@
         level = level || 1;
 
         if ( isHeaderVertex( vertex ) ) {
-
             vertex.children.forEach( function( child ) {
                 child.height = get_height( child, level + 1 );
                 child.level = level;
@@ -531,9 +638,7 @@
     function get_width( vertex ) {
         var width = 0;
 
-        if ( ( isHeaderVertex( vertex ) )
-            && vertex.children.length ) {
-
+        if ( isHeaderVertex( vertex ) && vertex.children.length ) {
             vertex.children.forEach( function( child ) {
                 child.width = get_width( child );
                 width = width + child.width;
@@ -546,6 +651,6 @@
     }
 
     function isHeaderVertex( vertex ) {
-        return in_array( vertex.interface_specifier, [INTERFACE_SPECIFIER.UNDEFINED, INTERFACE_SPECIFIER.COMPLEX, INTERFACE_SPECIFIER.HORIZONTAL, INTERFACE_SPECIFIER.VERTICAL] );
+        return in_array( vertex.interface_specifier, [INTERFACE_SPECIFIER.UNDEFINED, INTERFACE_SPECIFIER.COMPLEX] );
     }
 }
