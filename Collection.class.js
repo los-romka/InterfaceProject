@@ -98,21 +98,23 @@
             info = [info];
         }
 
-        var k = 0;
-        while ( info[k] && self.element_meta.name == info[k].name ) {
-            elementsOfSet.push( info[k] );
-            k++;
-        }
+        if (info.length > 0) {
+            var k = 0;
+            while ( info[k] && self.element_meta.name == info[k].name ) {
+                elementsOfSet.push( info[k] );
+                k++;
+            }
 
-        while ( size < elementsOfSet.length ) {
-            add_element();
-            size++;
-        }
+            while ( size < elementsOfSet.length ) {
+                add_element();
+                size++;
+            }
 
-        for ( var i = 0; i < size ; i++ ) {
-            var leafs_blocks = get_leafs_blocks(list, size, i);
+            for ( var i = 0; i < size ; i++ ) {
+                var leafs_blocks = get_leafs_blocks(list, size, i);
 
-            put_info_leafs_vals( elementsOfSet[i], leafs_blocks, self.element_meta );
+                put_info_leafs_vals( elementsOfSet[i], leafs_blocks, self.element_meta );
+            }
         }
 
         return self;
@@ -149,14 +151,13 @@
 
             if ( _type == COLLECTION_TYPE.SET ) {
                 $( th_name )
-                    .attr( 'colSpan', _width );
+                    .attr( 'colSpan', _height );
                 $( tr_name )
-                    .attr( 'colSpan', _width )
                     .insertBefore( $( table_block ).find( '>table>tr:first-child' ) );
             }
 
             $( th_control )
-                .attr( 'colSpan', _width );
+                .attr( 'colSpan', _height );
             $( tr_control )
                 .insertAfter( $( table_block ).find( '>table>tr:last-child' ) );
         }
@@ -173,7 +174,7 @@
         } else {
             tr = table_block.querySelector('table>tr:first-child');
             head_part = document.createElement( 'th' );
-            $( head_part ).attr( 'rowSpan', _height + 1 + ( _type == COLLECTION_TYPE.SET ? 1 : 0 ) );
+            $( head_part ).attr( 'rowSpan', _width + 1 + ( _type == COLLECTION_TYPE.SET ? 1 : 0 ) );
         }
 
         tr.appendChild( head_part );
@@ -274,10 +275,11 @@
             traversal_info.push( info );
         }
 
-        /** TODO: FUCKING MAGIC OR SOME ITERATIONS */
+        while ( traversal_meta.length > 0 ) {
+            current_meta = traversal_meta.shift();
+            current_info = traversal_info.shift();
 
-        for ( var i = 0; i < traversal_meta.length; i++ ) {
-            AbstractVertex( $( leafs_blocks.pop() ), traversal_meta[i] ).setInfo( traversal_info[i] );
+            AbstractVertex( $( leafs_blocks.pop() ), current_meta ).setInfo( current_info );
         }
     }
 
