@@ -64,7 +64,15 @@
 
         text = text + vertex.name;
 
-        if ( !vertex.sort ) {
+        if ( vertex.sort ) {
+            if ( vertex.children.length > 0 ) {
+                text = text + ' ' + vertex.sort + " ";
+            } else {
+                text = text + vertex.sort + "\n";
+            }
+        }
+
+        if ( !vertex.sort || vertex.children.length > 0) {
             text = text + " {\n";
             for ( var i = 0; i < vertex.children.length; i++ ) {
                 text = text + putVertex( vertex.children[i], level + 1 );
@@ -73,8 +81,6 @@
                 text = text + " ";
             }
             text = text + "}\n";
-        } else {
-            text = text + vertex.sort + "\n";;
         }
 
         return text;
@@ -102,7 +108,7 @@
             if ( !line.length ) {
                 line = lines[i];
             }
-            if ( lines[i].length < line.length ){
+            if ( lines[i].length < line.length && (lines[i].trim() !== line.trim()) ){
                 line = lines[i];
             }
         }

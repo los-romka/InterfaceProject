@@ -8,6 +8,7 @@
     var self = $.extend($block, {
         meta: meta,
         element_meta: clone( meta ),
+        elements: [],
         setInfo: setInfo,
         getInfo: getInfo,
         destroy: function() {
@@ -113,6 +114,7 @@
             for ( var i = 0; i < size ; i++ ) {
                 var leafs_blocks = get_leafs_blocks(list, size, i);
 
+                self.elements[i] = elementsOfSet[i];
                 put_info_leafs_vals( elementsOfSet[i], leafs_blocks, self.element_meta );
             }
         }
@@ -129,15 +131,31 @@
 
         /* append HORIZONTAL CONTROL HEADINGS for HORIZONTAL orientation */
         if (_orientation == COLLECTION_ORIENTATION.HORIZONTAL) {
+            var _index = in_array( SPECIFIER.PROXY, self.meta.specifiers ) ? 1 : 0;
+
             if ( _type == COLLECTION_TYPE.SET ) {
                 $( document.createElement( 'th' ) )
-                    .attr( 'rowSpan', _height )
-                    .insertBefore( $( table_block ).find( '>table>tr:first-child>*:first-child' ) );
+                    .attr( 'rowSpan', _height - _index )
+                    .insertBefore(
+                        $( table_block )
+                            .find( '>table' )
+                            .children()
+                            .eq( _index )
+                            .find('>*:first-child' )
+                    )
+                ;
             }
 
             $( document.createElement( 'th' ) )
-                .attr( 'rowSpan', _height )
-                .insertAfter( $( table_block ).find( '>table>tr:first-child>*:last-child' ) );
+                .attr( 'rowSpan', _height - _index )
+                .insertAfter(
+                    $( table_block )
+                        .find( '>table' )
+                        .children()
+                        .eq( _index )
+                        .find('>*:last-child' )
+                )
+            ;
 
         /* append VERTICAL CONTROL HEADINGS for VERTICAL orientation */
         } else {
@@ -335,6 +353,7 @@
     /** TODO: refactor */
     function add_element() {
         self.elements_count++;
+        self.elements.push(clone(self.element_meta));
 
         if ( self.element_meta.sort ) {
             var td = document.createElement( 'td' ),
@@ -403,6 +422,10 @@
     function remove_horizontal_element($tr) {
         return function() {
             self.elements_count--;
+
+            var index = [].indexOf.call($tr.parent().children(), $tr[0]) - _height;
+            self.elements.splice(index, 1);
+
             update_buttons();
             $tr.remove();
         }
