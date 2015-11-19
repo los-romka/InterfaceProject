@@ -18,7 +18,7 @@ Vertex.prototype.transformToCollection = function(orientation) {
 Vertex.prototype.simplifyCollection = function() {
     if ( this.specifiers ) {
         for ( var i = this.specifiers.length - 1; i >= 0 ; i-- ) {
-            if ( in_array(this.specifiers[i], [SPECIFIER.SET, SPECIFIER.SETMM, SPECIFIER.LIST, SPECIFIER.LISTMM, SPECIFIER.ONEMM]) ) {
+            if ( in_array(this.specifiers[i], [SPECIFIER.SET, SPECIFIER.SETMM, SPECIFIER.LIST, SPECIFIER.LISTMM, SPECIFIER.ONE, SPECIFIER.ONEMM]) ) {
                 this.specifiers.splice( i, 1 );
             }
         }
@@ -45,7 +45,9 @@ Vertex.prototype.updateInterfaceSpecifier = function() {
     if (this.interface_specifier == INTERFACE_SPECIFIER.UNDEFINED) {
         if ( intersect([SPECIFIER.SET,SPECIFIER.SETMM,
                 SPECIFIER.LIST,SPECIFIER.LISTMM,
-                SPECIFIER.ONEMM], this.specifiers).length > 0 ) {
+                SPECIFIER.ONEMM], this.specifiers).length > 0
+            || (in_array(SPECIFIER.ONE, this.specifiers) && !this.sort)
+        ) {
             this.interface_specifier = INTERFACE_SPECIFIER.COLLECTION;
         } else if ( this.sort ) {
             switch ( this.sort ) {

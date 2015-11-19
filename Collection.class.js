@@ -8,7 +8,6 @@
     var self = $.extend($block, {
         meta: meta,
         element_meta: clone( meta ),
-        elements: [],
         setInfo: setInfo,
         getInfo: getInfo,
         destroy: function() {
@@ -25,6 +24,7 @@
     /* init DOM */
     var _orientation = in_array(config.ORIENTATION, [COLLECTION_ORIENTATION.HORIZONTAL,COLLECTION_ORIENTATION.VERTICAL]) ?  config.ORIENTATION : COLLECTION_ORIENTATION.HORIZONTAL;
     var _type = intersect( self.meta.specifiers, [ SPECIFIER.SET, SPECIFIER.SETMM ] ).length > 0
+        || ( intersect( self.meta.specifiers, [ SPECIFIER.ONE, SPECIFIER.ONEMM ] ).length > 0 && !self.meta.sort )
         ? COLLECTION_TYPE.SET
         : COLLECTION_TYPE.LIST;
 
@@ -76,7 +76,7 @@
 
     function getInfo() {
         var list = self.find( '>table' ),
-            collection = new Vertex( self.element_meta.name, [], "", null ),
+            collection = [],
             size = get_size_from_blocks( _orientation, _height, list );
 
         for ( var i = 0; i < size ; i++ ) {
@@ -84,10 +84,19 @@
 
             var info = merge_leafs_val_with_meta( leafs_blocks, self.element_meta );
 
-            collection.children.push( info );
+            if ( _type == COLLECTION_TYPE.SET ) {
+                /* define element name */
+                if (_orientation == COLLECTION_ORIENTATION.HORIZONTAL) {
+                    info.sort = TO.NAME( list.find('>tr:nth-child(' + (i + _height + 1) + ')>*:first-child>.name').val() );
+                } else {
+                    info.sort = TO.NAME( list.find('>tr:first-child>*:nth-child(' + (i + 2) + ')>.name').val() );
+                }
+            }
+
+            collection.push( info );
         }
 
-        return collection.children;
+        return collection;
     }
 
     function setInfo( info ) {
@@ -114,8 +123,16 @@
             for ( var i = 0; i < size ; i++ ) {
                 var leafs_blocks = get_leafs_blocks(list, size, i);
 
-                self.elements[i] = elementsOfSet[i];
                 put_info_leafs_vals( elementsOfSet[i], leafs_blocks, self.element_meta );
+
+                if ( _type == COLLECTION_TYPE.SET ) {
+                    /* define element name */
+                    if (_orientation == COLLECTION_ORIENTATION.HORIZONTAL) {
+                        list.find('>tr:nth-child(' + (i + _height + 1) + ')>*:first-child>.name').val( FROM.NAME(elementsOfSet[i].sort) );
+                    } else {
+                        list.find('>tr:first-child>*:nth-child(' + (i + 2) + ')>.name').val( FROM.NAME(elementsOfSet[i].sort) );
+                    }
+                }
             }
         }
 
@@ -136,6 +153,7 @@
             if ( _type == COLLECTION_TYPE.SET ) {
                 $( document.createElement( 'th' ) )
                     .attr( 'rowSpan', _height - _index )
+                    .text( 'Имя элемента' )
                     .insertBefore(
                         $( table_block )
                             .find( '>table' )
@@ -169,7 +187,8 @@
 
             if ( _type == COLLECTION_TYPE.SET ) {
                 $( th_name )
-                    .attr( 'colSpan', _height );
+                    .attr( 'colSpan', _height )
+                    .text( 'Имя элемента' );
                 $( tr_name )
                     .insertBefore( $( table_block ).find( '>table>tr:first-child' ) );
             }
@@ -238,7 +257,6 @@
         return size;
     }
 
-    /** TODO: refactor */
     function put_info_leafs_vals( info, leafs_blocks, element_metainf ) {
         var traversal_meta = [],
             queue_meta = [],
@@ -353,7 +371,6 @@
     /** TODO: refactor */
     function add_element() {
         self.elements_count++;
-        self.elements.push(clone(self.element_meta));
 
         if ( self.element_meta.sort ) {
             var td = document.createElement( 'td' ),
@@ -422,10 +439,6 @@
     function remove_horizontal_element($tr) {
         return function() {
             self.elements_count--;
-
-            var index = [].indexOf.call($tr.parent().children(), $tr[0]) - _height;
-            self.elements.splice(index, 1);
-
             update_buttons();
             $tr.remove();
         }
@@ -467,6 +480,14 @@
         return remove_btn;
     }
 
+    function create_name_field() {
+        var name_field = document.createElement('input');
+        name_field.value = self.meta.name;
+        $(name_field).addClass('name');
+
+        return name_field;
+    }
+
     function append_horizontal_controls() {
         if ( _orientation == COLLECTION_ORIENTATION.HORIZONTAL ) {
             var remove_btn_block = document.createElement('td');
@@ -477,7 +498,8 @@
 
             if (_type === COLLECTION_TYPE.SET) {
                 $( document.createElement('td') )
-                    .insertBefore($tr.find('>*:first-child'));
+                    .insertBefore($tr.find('>*:first-child'))
+                    .append( create_name_field() );
             }
 
             remove_btn.onclick = remove_horizontal_element($tr);
@@ -490,7 +512,8 @@
     function append_vertical_controls() {
         if ( _type === COLLECTION_TYPE.SET ) {
             $( document.createElement('td') )
-                .insertBefore( self.find( '>table>tr:first-child>*:last-child' ) );
+                .insertBefore( self.find( '>table>tr:first-child>*:last-child' ) )
+                .append( create_name_field() );
         }
 
         var remove_btn_block = document.createElement('td');

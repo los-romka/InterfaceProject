@@ -75,7 +75,8 @@ TO = {
 
         return "[" + day + "." + month + "." + year + "-" + hour + ":" + min + ":" + sec + "." + milisec + "]";
     },
-    "BLOB" : function( value ) { return "[\'" + value + "\']";}
+    "BLOB" : function( value ) { return "[\'" + value + "\']";},
+    "NAME" : function( value ) { return "[" + value + "]";},
 };
 
 FROM = {
@@ -93,4 +94,5 @@ FROM = {
         return year + "-" + month + "-" + day + "T" + hour + ":" + min;
     },
     "BLOB" : function( value ) { return value.substring( 2, value.length - 2 ); },
+    "NAME" : function( value ) { return value.substring( 1, value.length - 1 ); }
 };
