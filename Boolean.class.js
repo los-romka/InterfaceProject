@@ -20,7 +20,8 @@
 
     $( form ).children().appendTo( self );
     self.addClass("boolean_block")
-        .data('boolean', self);
+        .data('boolean', self)
+        .data('type', 'boolean');
 
     return self;
 

@@ -20,7 +20,8 @@
 
     $( form ).children().appendTo( self );
     self.addClass("alt_block")
-        .data('alt', self);
+        .data('alt', self)
+        .data('type', 'alt');
 
     return self;
 

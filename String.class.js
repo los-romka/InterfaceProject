@@ -20,7 +20,8 @@
 
     $( form ).children().appendTo( self );
     self.addClass("string_block")
-        .data('string', self);
+        .data('string', self)
+        .data('type', 'string');
 
     return self;
 

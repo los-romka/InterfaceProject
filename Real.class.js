@@ -20,7 +20,8 @@
 
     $( form ).children().appendTo( self );
     self.addClass("real_block")
-        .data('real', self);
+        .data('real', self)
+        .data('type', 'real');
 
     return self;
 

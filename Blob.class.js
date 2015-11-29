@@ -20,7 +20,8 @@
 
     $( form ).children().appendTo( self );
     self.addClass("blob_block")
-        .data('blob', self);
+        .data('blob', self)
+        .data('type', 'blob');
 
     return self;
 

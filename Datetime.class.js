@@ -20,7 +20,8 @@
 
     $( form ).children().appendTo( $block );
     self.addClass("datetime_block")
-        .data('datetime', self);
+        .data('datetime', self)
+        .data('type', 'datetime');
 
     return self;
 

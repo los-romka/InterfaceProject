@@ -20,7 +20,8 @@
 
     $( form ).children().appendTo( $block );
     self.addClass("terminal_block")
-        .data('terminal', self);
+        .data('terminal', self)
+        .data('type', 'terminal');
 
     return self;
 

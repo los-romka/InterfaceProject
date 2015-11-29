@@ -64,7 +64,8 @@
     $( form ).children().appendTo( self );
     self.addClass("collection_block")
         .addClass( _orientation == COLLECTION_ORIENTATION.HORIZONTAL ? "collection_horizontal" : "collection_vertical" )
-        .data('collection', self);
+        .data('collection', self)
+        .data('type', 'collection');
 
     while ( self.elements_count < self.min_elements ) {
         add_element();

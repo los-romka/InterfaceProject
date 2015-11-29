@@ -20,7 +20,8 @@
 
     $( form ).children().appendTo( self );
     self.addClass("complex_block")
-        .data('complex', self);
+        .data('complex', self)
+        .data('type', 'complex');
 
     return self;
 

@@ -20,7 +20,8 @@
 
     $( form ).children().appendTo( $block );
     self.addClass("integer_block")
-        .data('integer', self);
+        .data('integer', self)
+        .data('type', 'integer');
 
     return self;
 
