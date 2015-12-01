@@ -2,13 +2,11 @@
  * Table representation by los-romka
  */
 (function( $ ) {
-    //#include Project.js
     //#include Constants.js
     //#include Common.js
     //#include Vertex.class.js
+    //#include AbstractVertex.class.js
     //#include IrParser.class.js
-    //#include Table.class.js
-    //#include Set.class.js
     //#include Collection.class.js
     //#include Complex.class.js
     //#include Alt.class.js

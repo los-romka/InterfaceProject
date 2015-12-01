@@ -7,6 +7,7 @@
     /* init object */
     var self = $.extend($block, {
         meta: meta,
+        updateIweConcepts: updateIweConcepts,
         setInfo: setInfo,
         getInfo: getInfo,
         destroy: function() {
@@ -24,6 +25,15 @@
         .data('type', 'boolean');
 
     return self;
+
+    function updateIweConcepts($iweBlock) {
+        /* onchange */
+        var change = getIweChangeFunction($iweBlock, self, self.meta);
+
+        self.find( 'input' ).unbind( 'change' ).change(function() {
+            change( $(this).is(":checked") ? "true" : "false", function() {});
+        });
+    }
 
     function getInfo() {
         var value = TO.BOOL( self.find( 'input' ).is(":checked") );
@@ -50,6 +60,7 @@
             input = document.createElement( 'input' );
 
         input.type = "checkbox";
+        $( input ).attr('checked', !!parseInt(DEFAULT_VALUE[ self.meta.sort ]));
 
         label.appendChild( input );
 

@@ -76,7 +76,7 @@ TO = {
         return "[" + day + "." + month + "." + year + "-" + hour + ":" + min + ":" + sec + "." + milisec + "]";
     },
     "BLOB" : function( value ) { return "[\'" + value + "\']";},
-    "NAME" : function( value ) { return "[" + value + "]";},
+    "NAME" : function( value ) { return "[" + value + "]";}
 };
 
 FROM = {
@@ -95,4 +95,33 @@ FROM = {
     },
     "BLOB" : function( value ) { return value.substring( 2, value.length - 2 ); },
     "NAME" : function( value ) { return value.substring( 1, value.length - 1 ); }
+};
+
+DEFAULT_VALUE = {
+    "[str]" : "_",
+    "[int]" : "0",
+    "[real]" : "0",
+    "[bool]" : "0",
+    "[date]" : (new Date()).toISOString().substring(0, 16),
+    "[blob]" : "0"
+};
+
+TRANSLATE_SORT = {
+    "[str]" : '(cорт: Строковое)',
+    "[int]" : '(cорт: Целое)',
+    "[real]" : '(cорт: Вещественное)',
+    "[bool]" : '(cорт: Логическое)',
+    "[date]" : '(cорт: Дата и время)',
+    "[blob]" : '(cорт: Бинарные данные)'
+};
+
+ACTION = {
+    SHOW: 'развернуть содержимое',
+    GENERATE: 'открыть генератор понятия',
+    NEW: 'создать новый экземпляр данного понятия',
+    CREATE: 'сохранить после генерации',
+    UPDATE: 'сохранить после редактирования',
+    EDIT_TITLE: 'редактировать понятие',
+    DELETE_TITLE: 'удалить отношение к понятию',
+    DELETE: 'удалить отношение'
 };

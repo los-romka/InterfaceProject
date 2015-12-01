@@ -7,6 +7,7 @@
     /* init object */
     var self = $.extend($block, {
         meta: meta,
+        updateIweConcepts: updateIweConcepts,
         setInfo: setInfo,
         getInfo: getInfo,
         destroy: function() {
@@ -24,6 +25,36 @@
         .data('type', 'datetime');
 
     return self;
+
+    function updateIweConcepts($iweBlock) {
+        /* onchange */
+        var change = getIweChangeFunction($iweBlock, self, self.meta);
+
+        self.find( 'input' ).unbind( 'change' ).change(function() {
+            var value = this.value;
+
+            if ( !value ) {
+                self.addClass("error");
+                return;
+            }
+
+            self.removeClass("error");
+
+            change(formatValue( value ), function() {});
+        });
+    }
+
+    function formatValue( value ) {
+        var year = value.substring(0, 4),
+            month = value.substring(5, 7),
+            day = value.substring(8, 10),
+            hour = value.substring(11, 13),
+            min = value.substring(14, 16),
+            sec = "00",
+            milisec = "000";
+
+        return day + "." + month + "." + year + "-" + hour + ":" + min + ":" + sec + "." + milisec;
+    }
 
     function getInfo() {
         var value = TO.DATE( self.find( 'input' ).val() );
@@ -50,6 +81,7 @@
             input = document.createElement( 'input' );
 
         input.type = "datetime-local";
+        input.value = DEFAULT_VALUE[ self.meta.sort ];
 
         if ( title ) {
             var ttl = document.createElement( 'span' );

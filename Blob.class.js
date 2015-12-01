@@ -7,6 +7,7 @@
     /* init object */
     var self = $.extend($block, {
         meta: meta,
+        updateIweConcepts: updateIweConcepts,
         setInfo: setInfo,
         getInfo: getInfo,
         destroy: function() {
@@ -24,6 +25,24 @@
         .data('type', 'blob');
 
     return self;
+
+    function updateIweConcepts($iweBlock) {
+        /* onchange */
+        var change = getIweChangeFunction($iweBlock, self, self.meta);
+
+        self.find( 'input' ).unbind( 'change' ).change(function() {
+            var value = this.value;
+
+            if ( !value ) {
+                self.addClass("error");
+                return;
+            }
+
+            self.removeClass("error");
+
+            change(value, function() {});
+        });
+    }
 
     function getInfo() {
         var value = TO.BLOB( self.find( 'input' ).val() );
@@ -48,6 +67,8 @@
         var blob_block = document.createElement( 'div' ),
             label = document.createElement( 'label' ),
             input = document.createElement( 'input' );
+
+        input.value = DEFAULT_VALUE[ self.meta.sort ];
 
         if ( title ) {
             var ttl = document.createElement( 'span' );

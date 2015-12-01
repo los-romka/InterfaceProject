@@ -8,6 +8,8 @@
     var self = $.extend($block, {
         meta: meta,
         element_meta: clone( meta ),
+        elements: [],
+        updateIweConcepts: updateIweConcepts,
         setInfo: setInfo,
         getInfo: getInfo,
         destroy: function() {
@@ -39,7 +41,6 @@
     self.element_meta.level = 0;
     self.element_meta.width = _width;
     self.element_meta.height = _height;
-
 
     if ( intersect( self.meta.specifiers, [ SPECIFIER.ONE, SPECIFIER.COPY ] ).length > 0 ) {
         self.min_elements = 1;
@@ -74,6 +75,151 @@
     update_buttons();
 
     return self;
+
+    function updateIweConcepts($iweBlock) {
+        /* produce */
+        self.produce = getIweProduceFunction($iweBlock, self, self.meta);
+        self.delete = getIweDeleteFunction($iweBlock, self, self.meta);
+
+        var infos = getIweInfos($iweBlock, self.meta),
+            allow_produce_nesting = true,
+            allow_update_children = true;
+
+        for ( var i = 0; i < self.elements.length; i++ ) {
+            if (infos.eq(i).length === 0) {
+                if (!self.elements[i].produced) {
+                    self.elements[i].produce();
+                    self.produce();
+                }
+                allow_produce_nesting = false;
+            }
+        }
+
+        if (allow_produce_nesting) {
+            for ( var j = 0; j < self.elements.length; j++ ) {
+                var traversal = [],
+                    queue = [],
+                    queue_block =[];
+
+                queue.push( self.elements[j] );
+                queue_block.push( infos.eq(j) );
+
+                while ( queue.length ) {
+                    var current = queue.pop();
+                    var $current_block = queue_block.pop();
+
+                    if ( !in_array( current, traversal ) ) {
+                        traversal.push( current );
+
+                        if ( isHeaderVertex( current ) && current !== self.elements[j]) {
+                            var cur_inf = getIweInfos($current_block, current, true);
+
+                            if (cur_inf.length === 0) {
+                                if (!current.produced) {
+                                    current.produce();
+                                    var produce = getIweProduceFunction($current_block, self, current, true);
+                                    produce(function () {
+                                    });
+                                }
+                                allow_update_children = false;
+                            }
+                        }
+
+                        if ( isHeaderVertex( current ) ) {
+                            if (current === self.elements[j] || cur_inf.length !== 0) {
+                                for (var i = 0; i < current.children.length; i++) {
+                                    var ch_inf = getIweInfos($current_block, current.children[i]);
+
+                                    if (ch_inf.length === 0) {
+                                        if (!current.children[i].produced) {
+                                            current.children[i].produce();
+                                            var produce = getIweProduceFunction($current_block, self, current.children[i]);
+                                            produce(function () {
+                                            });
+                                        }
+                                        allow_update_children = false;
+                                    } else {
+                                        queue_block.push(ch_inf.eq(0));
+                                        queue.push(current.children[i]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            allow_update_children = false;
+        }
+
+        /* update childs */
+        if (allow_update_children) {
+            var list = self.find( '>table' ),
+                size = get_size_from_blocks( _orientation, _height, list );
+
+            infos.map(function(index, iweBlock) {
+                try {
+                    var leafs_blocks = get_leafs_blocks(list, size, index);
+
+                    update_leafs_concepts( $(iweBlock), leafs_blocks, self.elements[index]);
+                } catch (e) {}
+            });
+        }
+    }
+
+    function update_leafs_concepts( $iweBlock, leafs_blocks, element_metainf ) {
+        var traversal_meta = [],
+            queue_meta = [],
+            traversal_block = [],
+            queue_block = [];
+
+        queue_meta.push( clone(element_metainf) );
+        queue_block.push( clone($iweBlock) );
+
+        while ( queue_meta.length ) {
+
+            var current_meta = queue_meta.pop(),
+                $current_block = queue_block.pop();
+
+            //if (current_info instanceof Vertex) {
+            //    sortArrayByMeta( current_info.children, current_meta.children);
+            //}
+
+            traversal_meta.push( current_meta );
+
+            if ( isHeaderVertex( current_meta ) ) {
+                var k = 0;
+
+                for ( var i = 0; i < current_meta.children.length; i++ ) {
+                    queue_meta.push( current_meta.children[i] );
+
+                    var cur_inf = getIweInfos($current_block, current_meta.children[i]);
+
+                    queue_block.push( cur_inf.eq(0) );
+                }
+            } else {
+                traversal_block.push( $current_block );
+            }
+        }
+
+        for ( var i = traversal_meta.length - 1; i >= 0; i-- ) {
+            if ( isHeaderVertex( traversal_meta[i] ) ) {
+                traversal_meta.splice( i, 1 );
+            }
+        }
+
+        if ( traversal_meta.length === 0 ) {
+            traversal_meta.push( element_metainf );
+            traversal_block.push( $iweBlock );
+        }
+
+        while ( traversal_meta.length > 0 ) {
+            current_meta = traversal_meta.shift();
+            $current_block = traversal_block.shift();
+
+            AbstractVertex( $( leafs_blocks.pop() ), current_meta ).updateIweConcepts( $current_block );
+        }
+    }
 
     function getInfo() {
         var list = self.find( '>table' ),
@@ -124,7 +270,12 @@
             for ( var i = 0; i < size ; i++ ) {
                 var leafs_blocks = get_leafs_blocks(list, size, i);
 
-                put_info_leafs_vals( elementsOfSet[i], leafs_blocks, self.element_meta );
+                try {
+                    self.elements[i].produce();
+                    put_info_leafs_vals( elementsOfSet[i], leafs_blocks, self.element_meta );
+                } catch (e) {
+                    console.log('You have incorrect info in meta: ' + self.meta.name );
+                }
 
                 if ( _type == COLLECTION_TYPE.SET ) {
                     /* define element name */
@@ -369,9 +520,10 @@
 
         return vertex;
     }
-    /** TODO: refactor */
+
     function add_element() {
         self.elements_count++;
+        self.elements.push(clone(self.element_meta));
 
         if ( self.element_meta.sort ) {
             var td = document.createElement( 'td' ),
@@ -439,35 +591,52 @@
 
     function remove_horizontal_element($tr) {
         return function() {
-            self.elements_count--;
-            update_buttons();
-            $tr.remove();
+            var index = $tr.index() - _height;
+
+            self.delete(index, function(res) {
+                self.elements.splice(index, 1);
+
+                $tr.remove();
+
+                self.elements_count--;
+                update_buttons();
+            });
         }
     }
 
     function remove_vertical_element() {
-        var $td = $( this ).parent();
-        var i = -1;
+        var btn = $( this );
+        var index = btn.parent().index() - 1;
 
-        while ($td.next().length > 0) {
-            $td = $td.next();
-            i--;
-        }
+        self.delete(index, function() {
+            self.elements.splice(index,1);
 
-        var rows = self.find('>table>tr');
+            var $td = btn.parent();
+            var i = -1;
 
-        for (var j = 0; j < rows.length; j++) {
-            rows.eq(j).children().eq(i - ( j === 0 ? 1 : 0)).remove();
-        }
+            while ($td.next().length > 0) {
+                $td = $td.next();
+                i--;
+            }
 
-        self.elements_count--;
-        update_buttons();
+            var rows = self.find('>table>tr');
+
+            for (var j = 0; j < rows.length; j++) {
+                rows.eq(j).children().eq(i - ( j === 0 ? 1 : 0)).remove();
+            }
+
+            self.elements_count--;
+            update_buttons();
+        });
     }
 
     function generate_add_button() {
         var add_btn = document.createElement( 'button' );
         add_btn.textContent = '+ Добавить';
-        add_btn.onclick = add_element;
+        add_btn.onclick = function() {
+            self.produce(fixElementsOrder);
+        };
+
         $( add_btn ).addClass('add');
 
         return add_btn;
@@ -701,5 +870,21 @@
 
     function isHeaderVertex( vertex ) {
         return in_array( vertex.interface_specifier, [INTERFACE_SPECIFIER.UNDEFINED, INTERFACE_SPECIFIER.COMPLEX] );
+    }
+
+    function fixElementsOrder(res) {
+        var win = self.closest('div.iacpaas-window');
+        var currentTabIdx = parseInt(win.attr('current-tab'));
+        var currentTab = win.find('div#iacpaas-tabs div#iacpaas-tab-' + (currentTabIdx + 1));
+        if (currentTab.length == 0)
+            currentTab = win;
+
+        var r;
+        if ((r = /\$REDIRECT\$:(.*)$/.exec(res)) != null)
+            window.location = r[1];
+        else
+            currentTab[0].innerHTML = res;
+
+        vivify();
     }
 }

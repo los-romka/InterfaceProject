@@ -5,14 +5,48 @@
     this.interface_params = {};
     this.sort = sort;
     this.children = [];
+    this.produced = false;
 }
 
+Vertex.prototype.produce = function() {
+    this.produced = true;
+};
+
 Vertex.prototype.transformToCollection = function(orientation) {
-    this.interface_params = {
+    var traversal = [],
+        queue = [],
+        collection;
+
+    queue.push( this );
+
+    while ( queue.length ) {
+        var current = queue.pop();
+
+        if ( !in_array( current, traversal ) ) {
+            traversal.push( current );
+
+            if ( intersect(current.specifiers, [SPECIFIER.SET, SPECIFIER.SETMM, SPECIFIER.LIST, SPECIFIER.LISTMM, SPECIFIER.ONE, SPECIFIER.ONEMM]).length > 0 ) {
+                collection = current;
+                break;
+            }
+
+            for ( var i = 0; i < current.children.length; i++ ) {
+                queue.push( current.children[i] );
+            }
+        }
+    }
+
+    if (!collection) {
+        collection = this;
+    }
+
+    collection.interface_params = {
         ORIENTATION: orientation
     };
 
-    this.interface_specifier = INTERFACE_SPECIFIER.COLLECTION;
+    collection.interface_specifier = INTERFACE_SPECIFIER.COLLECTION;
+
+    return this;
 };
 
 Vertex.prototype.simplifyCollection = function() {
@@ -41,62 +75,51 @@ Vertex.prototype.updateSpecifier = function() {
     return this;
 };
 
-Vertex.prototype.updateInterfaceSpecifier = function() {
-    if (this.interface_specifier == INTERFACE_SPECIFIER.UNDEFINED) {
+Vertex.prototype.getInterfaceSpecifier = function() {
+    var interface_specifier = "";
+
+    if (interface_specifier == INTERFACE_SPECIFIER.UNDEFINED) {
         if ( intersect([SPECIFIER.SET,SPECIFIER.SETMM,
                 SPECIFIER.LIST,SPECIFIER.LISTMM,
                 SPECIFIER.ONEMM], this.specifiers).length > 0
             || (in_array(SPECIFIER.ONE, this.specifiers) && !this.sort)
         ) {
-            this.interface_specifier = INTERFACE_SPECIFIER.COLLECTION;
+            interface_specifier = INTERFACE_SPECIFIER.COLLECTION;
         } else if ( this.sort ) {
             switch ( this.sort ) {
-                case TERMINAL.SORT.STR : this.interface_specifier = INTERFACE_SPECIFIER.STRING; break;
-                case TERMINAL.SORT.INT : this.interface_specifier = INTERFACE_SPECIFIER.INTEGER; break;
-                case TERMINAL.SORT.REAL : this.interface_specifier = INTERFACE_SPECIFIER.REAL; break;
-                case TERMINAL.SORT.BOOL : this.interface_specifier = INTERFACE_SPECIFIER.BOOLEAN; break;
-                case TERMINAL.SORT.DATE : this.interface_specifier = INTERFACE_SPECIFIER.DATETIME; break;
-                case TERMINAL.SORT.BLOB : this.interface_specifier = INTERFACE_SPECIFIER.BLOB; break;
+                case TERMINAL.SORT.STR : interface_specifier = INTERFACE_SPECIFIER.STRING; break;
+                case TERMINAL.SORT.INT : interface_specifier = INTERFACE_SPECIFIER.INTEGER; break;
+                case TERMINAL.SORT.REAL : interface_specifier = INTERFACE_SPECIFIER.REAL; break;
+                case TERMINAL.SORT.BOOL : interface_specifier = INTERFACE_SPECIFIER.BOOLEAN; break;
+                case TERMINAL.SORT.DATE : interface_specifier = INTERFACE_SPECIFIER.DATETIME; break;
+                case TERMINAL.SORT.BLOB : interface_specifier = INTERFACE_SPECIFIER.BLOB; break;
                 default : {
                     if ( this.sort.match( TERMINAL.VALUE.STR ) || this.sort.match( TERMINAL.VALUE.INT )
                         || this.sort.match( TERMINAL.VALUE.REAL ) || this.sort.match( TERMINAL.VALUE.BOOL )
                         || this.sort.match( TERMINAL.VALUE.DATE ) || this.sort.match( TERMINAL.VALUE.BLOB ) ) {
-                        this.interface_specifier = INTERFACE_SPECIFIER.TERMINAL_VALUE;
+                        interface_specifier = INTERFACE_SPECIFIER.TERMINAL_VALUE;
                     } else {
-                        this.interface_specifier = INTERFACE_SPECIFIER.UNDEFINED;
+                        interface_specifier = INTERFACE_SPECIFIER.UNDEFINED;
                     }
                     break;
                 }
             }
         } else if ( in_array( SPECIFIER.ALT, this.specifiers ) )  {
-            this.interface_specifier = INTERFACE_SPECIFIER.ALT;
+            interface_specifier = INTERFACE_SPECIFIER.ALT;
         } else {
-            this.interface_specifier = INTERFACE_SPECIFIER.COMPLEX;
+            interface_specifier = INTERFACE_SPECIFIER.COMPLEX;
         }
     }
+
+    return interface_specifier;
+};
+
+Vertex.prototype.updateInterfaceSpecifier = function() {
+    this.interface_specifier = this.getInterfaceSpecifier();
 
     return this;
 };
 
-;function AbstractVertex( $block, meta ) {
-    meta.updateInterfaceSpecifier();
-
-    var _class;
-
-    switch ( meta.interface_specifier ) {
-        case INTERFACE_SPECIFIER.COLLECTION :     _class = CollectionVertex; break;
-
-        case INTERFACE_SPECIFIER.ALT :            _class = AltVertex; break;
-        case INTERFACE_SPECIFIER.COMPLEX :        _class = ComplexVertex; break;
-        case INTERFACE_SPECIFIER.BOOLEAN :        _class = BooleanVertex; break;
-        case INTERFACE_SPECIFIER.DATETIME :       _class = DatetimeVertex; break;
-        case INTERFACE_SPECIFIER.STRING :         _class = StringVertex; break;
-        case INTERFACE_SPECIFIER.INTEGER :        _class = IntegerVertex; break;
-        case INTERFACE_SPECIFIER.REAL :           _class = RealVertex; break;
-        case INTERFACE_SPECIFIER.BLOB :           _class = BlobVertex; break;
-        case INTERFACE_SPECIFIER.TERMINAL_VALUE : _class = TerminalVertex; break;
-        default :                                 _class = function() {return null;}
-    }
-
-    return _class( $block, meta );
-}
+Vertex.prototype.toHtmlName = function() {
+    return (this.name + (this.sort ? ' ' + TRANSLATE_SORT[this.sort] : ''));
+};

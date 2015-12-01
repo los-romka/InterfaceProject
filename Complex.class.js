@@ -7,6 +7,7 @@
     /* init object */
     var self = $.extend($block, {
         meta: meta,
+        updateIweConcepts: updateIweConcepts,
         setInfo: setInfo,
         getInfo: getInfo,
         destroy: function() {
@@ -24,6 +25,31 @@
         .data('type', 'complex');
 
     return self;
+
+    function updateIweConcepts($iweBlock) {
+        var title_shift = ( self.children()[0].nodeName == "H2" ? 1 : 0);
+
+        for ( var i = 0; i < self.meta.children.length; i++ ) {
+            var child_meta = self.meta.children[i];
+            var $child_block = $( self.children().get(i + title_shift) );
+
+            var infos = getIweInfos($iweBlock, child_meta);
+
+            if (child_meta.interface_specifier === INTERFACE_SPECIFIER.COLLECTION) {
+                AbstractVertex( $child_block, child_meta )
+                    .updateIweConcepts($iweBlock);
+            } else if (infos.length === 0) {
+                if (!child_meta.produced) {
+                    child_meta.produce();
+                    var produce = getIweProduceFunction($iweBlock, $child_block, child_meta);
+                    produce(function() {});
+                }
+            } else {
+                AbstractVertex( $child_block, child_meta )
+                    .updateIweConcepts(infos.eq(0));
+            }
+        }
+    }
 
     function getInfo() {
         var title_shift = ( self.children()[0].nodeName == "H2" ? 1 : 0),
@@ -57,21 +83,24 @@
 
 
         for ( var i = 0; i < self.meta.children.length; i++ ) {
+            try {
+                if ( self.meta.children[i].interface_specifier == INTERFACE_SPECIFIER.COLLECTION ) {
+                    var elementsOfSet = [];
+                    while ( info.children[i + k] && self.meta.children[i].name == info.children[i + k].name ) {
+                        elementsOfSet.push( info.children[i + k] );
+                        k++;
+                    }
+                    k--;
 
-            if ( self.meta.children[i].interface_specifier == INTERFACE_SPECIFIER.COLLECTION ) {
-                var elementsOfSet = [];
-                while ( info.children[i + k] && self.meta.children[i].name == info.children[i + k].name ) {
-                    elementsOfSet.push( info.children[i + k] );
-                    k++;
+                    elem = elementsOfSet;
+                } else {
+                    elem = info.children[i + k];
                 }
-                k--;
 
-                elem = elementsOfSet;
-            } else {
-                elem = info.children[i + k];
+                AbstractVertex( $( self.children().get(i + title_shift) ), self.meta.children[i] ).setInfo( elem );
+            } catch (e) {
+                console.log('You have incorrect info in meta: ' + self.meta.children[i].name );
             }
-
-            AbstractVertex( $( self.children().get(i + title_shift) ), self.meta.children[i] ).setInfo( elem );
         }
 
         return self;

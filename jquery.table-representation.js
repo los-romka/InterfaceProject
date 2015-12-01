@@ -8,32 +8,57 @@ $.fn.tableRepresentation = function(options) {
         orientation: 'HORIZONTAL'
     }, options || {});
 
-    var self = $( this );
+    var _self = $( this );
 
+    /* prepare interface */
+    _self.closest('.iwe-concept').find('>div.iwe-concept-details')
+    ;//.css('display', 'none');
+
+    /* put table */
     var parser = IrParser();
-    var meta = parser.toJson( self.data('tpir-meta') );
+    var meta = parser.toJson( _self.data('tpir-meta') );
 
     meta.transformToCollection( COLLECTION_ORIENTATION[ settings.orientation ] );
 
-    AbstractVertex( self, meta );
+    _self = $.extend(AbstractVertex( _self, meta ), {
+        refresh: refresh
+    });
 
     var info;
 
-    if ( info = self.data('tpir-info') ) {
-        self.setInfo( parser.toJson( info ) );
+    if ( info = _self.data('tpir-info') ) {
+        _self.setInfo( parser.toJson( info ) );
     }
 
-    /* INFO DUMP --> */
-    var $pre = $('<pre></pre>').insertAfter(self);
+    initLoading(_self);
 
-    setInterval(function() {
-        $pre.text(parser.toIr( self.getInfo() ));
-    },5000);
-    /* <-- END INFO DUMP */
+    _self.refresh();
 
-    console.log('hello world');
+    _self.data('table-representation', _self);
 
-    self.data('table-representation', self);
+    return _self;
 
-    return self;
+    function refresh($concept) {
+        $concept = $concept || _self.closest('.iwe-concept');
+
+        unfold($concept, function() {
+            _self.updateIweConcepts($concept);
+        });
+    }
+
+    function unfold($concept, callback) {
+        $concept = $concept || _self.closest('.iwe-concept');
+        var $unfolded = $concept.find('[title="' + ACTION.SHOW +'"]');
+
+        if ($unfolded.length > 0) {
+            var args = retrieveActionsArgs($unfolded);
+            doPlatformActions(args, _self, function() {
+                unfold($concept, callback);
+            });
+        } else {
+            if (typeof(callback) === "function") {
+                callback();
+            }
+        }
+    }
 };
