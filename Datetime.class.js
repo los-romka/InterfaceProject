@@ -81,7 +81,7 @@
             input = document.createElement( 'input' );
 
         input.type = "datetime-local";
-        input.value = DEFAULT_VALUE[ self.meta.sort ];
+        $( input ).val( (new Date()).toISOString().substring(0, 16) );
 
         if ( title ) {
             var ttl = document.createElement( 'span' );

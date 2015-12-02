@@ -102,7 +102,18 @@ DEFAULT_VALUE = {
     "[int]" : "0",
     "[real]" : "0",
     "[bool]" : "0",
-    "[date]" : (new Date()).toISOString().substring(0, 16),
+    "[date]" : (function(){
+        var value = (new Date()).toISOString(),
+            year = value.substring(0, 4),
+            month = value.substring(5, 7),
+            day = value.substring(8, 10),
+            hour = value.substring(11, 13),
+            min = value.substring(14, 16),
+            sec = "00",
+            milisec = "000";
+
+        return day + "." + month + "." + year + "-" + hour + ":" + min + ":" + sec + "." + milisec;
+    })(),
     "[blob]" : "0"
 };
 
