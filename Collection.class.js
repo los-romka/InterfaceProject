@@ -76,6 +76,7 @@
 
     return self;
 
+    /** TODO: refactor */
     function updateIweConcepts($iweBlock) {
         /* produce */
         self.produce = getIweProduceFunction($iweBlock, self, self.meta);
@@ -114,7 +115,8 @@
                         if ( isHeaderVertex( current ) && current !== self.elements[j]) {
                             var cur_inf = getIweInfos($current_block, current, true);
 
-                            if (cur_inf.length === 0) {
+                            if (current.interface_specifier === INTERFACE_SPECIFIER.COLLECTION) {
+                            } else if (cur_inf.length === 0) {
                                 if (!current.produced) {
                                     current.produce();
                                     var produce = getIweProduceFunction($current_block, self, current, true);
@@ -130,7 +132,10 @@
                                 for (var i = 0; i < current.children.length; i++) {
                                     var ch_inf = getIweInfos($current_block, current.children[i]);
 
-                                    if (ch_inf.length === 0) {
+                                    if (current.children[i].interface_specifier === INTERFACE_SPECIFIER.COLLECTION) {
+                                        queue_block.push($current_block);
+                                        queue.push(current.children[i]);
+                                    } else if (ch_inf.length === 0) {
                                         if (!current.children[i].produced) {
                                             current.children[i].produce();
                                             var produce = getIweProduceFunction($current_block, self, current.children[i]);
@@ -188,14 +193,16 @@
             traversal_meta.push( current_meta );
 
             if ( isHeaderVertex( current_meta ) ) {
-                var k = 0;
-
                 for ( var i = 0; i < current_meta.children.length; i++ ) {
-                    queue_meta.push( current_meta.children[i] );
-
                     var cur_inf = getIweInfos($current_block, current_meta.children[i]);
 
-                    queue_block.push( cur_inf.eq(0) );
+                    if (current_meta.children[i].interface_specifier === INTERFACE_SPECIFIER.COLLECTION) {
+                        queue_block.push( $current_block );
+                    } else {
+                        queue_block.push( cur_inf.eq(0) );
+                    }
+
+                    queue_meta.push( current_meta.children[i] );
                 }
             } else {
                 traversal_block.push( $current_block );

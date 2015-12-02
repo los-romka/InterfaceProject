@@ -204,11 +204,15 @@ function doPlatformActions(args, $tableRepresentationNode, callback, last_data, 
     }
 }
 
+function getParentIweBlock($iweBlock) {
+    return $iweBlock.parent().closest('.iwe-concept');
+}
+
 function getIweInfos($iweBlock, vertex, fromParent) {
     var info_html_name = " [" + vertex.toHtmlName() + "]";
 
     if (fromParent) {
-        $iweBlock = $iweBlock.parent().closest('.iwe-concept');
+        $iweBlock = getParentIweBlock($iweBlock);
     }
 
     if (vertex.sort) {
@@ -239,7 +243,7 @@ function getIweInfos($iweBlock, vertex, fromParent) {
 
 function getIweProduceFunction($iweBlock, $block, vertex, fromParent) {
     if (fromParent) {
-        $iweBlock = $iweBlock.parent().closest('.iwe-concept');
+        $iweBlock = getParentIweBlock($iweBlock);
     }
 
     var $produceBtn = $iweBlock
