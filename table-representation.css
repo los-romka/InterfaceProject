@@ -121,3 +121,8 @@
     font-size: 3em;
     color: whitesmoke;
 }
+
+.table-representation .invisible,
+.table-representation.invisible {
+    display: none;
+}

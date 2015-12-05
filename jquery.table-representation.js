@@ -4,10 +4,6 @@ $.fn.tableRepresentation = function(options) {
         return data;
     }
 
-    var settings = $.extend({
-        orientation: 'HORIZONTAL'
-    }, options || {});
-
     var _self = $( this );
 
     /* prepare interface */
@@ -18,7 +14,8 @@ $.fn.tableRepresentation = function(options) {
     var parser = IrParser();
     var meta = parser.toJson( _self.data('tpir-meta') );
 
-    meta.transformToCollection( COLLECTION_ORIENTATION[ settings.orientation ] );
+    meta.switchModification( _self.data('is-modification') );
+    meta.transformToCollection();
 
     _self = $.extend(AbstractVertex( _self, meta ), {
         refresh: refresh

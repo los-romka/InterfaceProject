@@ -6,29 +6,27 @@
     this.sort = sort;
     this.children = [];
     this.produced = false;
+
+    this.modification = false;
 }
 
-Vertex.prototype.produce = function() {
-    this.produced = true;
+Vertex.prototype.isModification = function() {
+    return this.modification;
 };
 
-Vertex.prototype.transformToCollection = function(orientation) {
+Vertex.prototype.switchModification = function(modification) {
     var traversal = [],
-        queue = [],
-        collection;
+        queue = [];
 
     queue.push( this );
 
     while ( queue.length ) {
         var current = queue.pop();
 
+        current.modification = modification;
+
         if ( !in_array( current, traversal ) ) {
             traversal.push( current );
-
-            if ( intersect(current.specifiers, [SPECIFIER.SET, SPECIFIER.SETMM, SPECIFIER.LIST, SPECIFIER.LISTMM, SPECIFIER.ONE, SPECIFIER.ONEMM]).length > 0 ) {
-                collection = current;
-                break;
-            }
 
             for ( var i = 0; i < current.children.length; i++ ) {
                 queue.push( current.children[i] );
@@ -36,15 +34,25 @@ Vertex.prototype.transformToCollection = function(orientation) {
         }
     }
 
-    if (!collection) {
-        collection = this;
+    return this;
+};
+
+Vertex.prototype.produce = function() {
+    this.produced = true;
+};
+
+Vertex.prototype.transformToCollection = function() {
+    /* disable top-level collection */
+    if (this.getInterfaceSpecifier() == INTERFACE_SPECIFIER.COLLECTION) {
+        this.interface_specifier = INTERFACE_SPECIFIER.COMPLEX;
     }
 
-    collection.interface_params = {
-        ORIENTATION: orientation
-    };
-
-    collection.interface_specifier = INTERFACE_SPECIFIER.COLLECTION;
+    /* make */
+    for (var i = 0; i < this.children.length; i++) {
+        if ( this.children[i].interface_specifier == INTERFACE_SPECIFIER.COMPLEX) {
+            this.children[i].interface_specifier = INTERFACE_SPECIFIER.COLLECTION;
+        }
+    }
 
     return this;
 };

@@ -27,12 +27,14 @@
     return self;
 
     function updateIweConcepts($iweBlock) {
-        /* onchange */
-        var change = getIweChangeFunction($iweBlock, self, self.meta);
+        if (self.meta.isModification()) {
+            /* onchange */
+            var change = getIweChangeFunction($iweBlock, self, self.meta);
 
-        self.find( 'input' ).unbind( 'change' ).change(function() {
-            change( $(this).is(":checked") ? "true" : "false", function() {});
-        });
+            self.find( 'input' ).unbind( 'change' ).change(function() {
+                change( $(this).is(":checked") ? "true" : "false", function() {});
+            });
+        }
     }
 
     function getInfo() {
@@ -61,6 +63,7 @@
 
         input.type = "checkbox";
         $( input ).attr('checked', !!parseInt(DEFAULT_VALUE[ self.meta.sort ]));
+        $( input ).prop('disabled', !self.meta.isModification() );
 
         label.appendChild( input );
 

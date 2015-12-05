@@ -27,23 +27,25 @@
     return self;
 
     function updateIweConcepts($iweBlock) {
-        /* onchange */
-        var change = getIweChangeFunction($iweBlock, self, self.meta);
+        if (self.meta.isModification()) {
+            /* onchange */
+            var change = getIweChangeFunction($iweBlock, self, self.meta);
 
-        self.find( 'input' ).unbind( 'change' ).change(function() {
-            var value = this.value;
+            self.find( 'input' ).unbind( 'change' ).change(function() {
+                var value = this.value;
 
-            var regex = /^-?[0-9]+$/;
+                var regex = /^-?[0-9]+$/;
 
-            if ( !(regex.test(value)) ) {
-                self.addClass("error");
-                return;
-            }
+                if ( !(regex.test(value)) ) {
+                    self.addClass("error");
+                    return;
+                }
 
-            self.removeClass("error");
+                self.removeClass("error");
 
-            change(value, function() {});
-        });
+                change(value, function() {});
+            });
+        }
     }
 
     function getInfo() {
@@ -71,6 +73,8 @@
             input = document.createElement( 'input' );
 
         input.value = DEFAULT_VALUE[ self.meta.sort ];
+
+        $( input ).attr('readonly', !self.meta.isModification());
 
         if ( title ) {
             var ttl = document.createElement( 'span' );

@@ -186,10 +186,6 @@
             var current_meta = queue_meta.pop(),
                 $current_block = queue_block.pop();
 
-            //if (current_info instanceof Vertex) {
-            //    sortArrayByMeta( current_info.children, current_meta.children);
-            //}
-
             traversal_meta.push( current_meta );
 
             if ( isHeaderVertex( current_meta ) ) {
@@ -303,12 +299,10 @@
 
         table_block.appendChild( form_table( matrix ) );
 
-        var add_btn = generate_add_button();
+        var _index = in_array( SPECIFIER.PROXY, self.meta.specifiers ) ? 1 : 0;
 
         /* append HORIZONTAL CONTROL HEADINGS for HORIZONTAL orientation */
         if (_orientation == COLLECTION_ORIENTATION.HORIZONTAL) {
-            var _index = in_array( SPECIFIER.PROXY, self.meta.specifiers ) ? 1 : 0;
-
             if ( _type == COLLECTION_TYPE.SET ) {
                 $( document.createElement( 'th' ) )
                     .attr( 'rowSpan', _height - _index )
@@ -323,7 +317,7 @@
                 ;
             }
 
-            $( document.createElement( 'th' ) )
+            var $remove_heading = $( document.createElement( 'th' ) )
                 .attr( 'rowSpan', _height - _index )
                 .insertAfter(
                     $( table_block )
@@ -334,6 +328,10 @@
                 )
             ;
 
+            if (!self.meta.isModification()) {
+                $remove_heading.addClass('invisible');
+            }
+
         /* append VERTICAL CONTROL HEADINGS for VERTICAL orientation */
         } else {
             var tr_name = document.createElement( 'tr' );
@@ -341,8 +339,18 @@
             tr_name.appendChild(th_name);
 
             var tr_control = document.createElement( 'tr' );
-            var th_control = document.createElement( 'th' );
-            tr_control.appendChild(th_control);
+
+            if ( _height - _index > 0 ) {
+                var th_control = document.createElement( 'th' );
+                tr_control.appendChild(th_control);
+
+                $( th_control )
+                    .attr( 'colSpan', _height );
+
+                if (!self.meta.isModification()) {
+                    $( th_control ).addClass('invisible');
+                }
+            }
 
             if ( _type == COLLECTION_TYPE.SET ) {
                 $( th_name )
@@ -352,8 +360,6 @@
                     .insertBefore( $( table_block ).find( '>table>tr:first-child' ) );
             }
 
-            $( th_control )
-                .attr( 'colSpan', _height );
             $( tr_control )
                 .insertAfter( $( table_block ).find( '>table>tr:last-child' ) );
         }
@@ -363,18 +369,29 @@
 
         if (_orientation == COLLECTION_ORIENTATION.HORIZONTAL) {
             tr = table_block.querySelector('table>tr:last-child');
+
+            $(tr).addClass('add_block');
+
             head_part = document.createElement( 'td' );
             $( head_part ).attr( 'colSpan', '100%' );
 
             /* append ADD button for VERTICAL orientation */
         } else {
+
             tr = table_block.querySelector('table>tr:first-child');
             head_part = document.createElement( 'th' );
-            $( head_part ).attr( 'rowSpan', _width + 1 + ( _type == COLLECTION_TYPE.SET ? 1 : 0 ) );
+
+            $( head_part )
+                .addClass('add_block')
+                .attr( 'rowSpan', _width + 1 + ( _type == COLLECTION_TYPE.SET ? 1 : 0 ) );
         }
 
         tr.appendChild( head_part );
-        head_part.appendChild( add_btn );
+
+        if (self.meta.isModification()) {
+            var add_btn = generate_add_button();
+            head_part.appendChild( add_btn );
+        }
 
         return table_block;
     }
@@ -668,8 +685,11 @@
     function append_horizontal_controls() {
         if ( _orientation == COLLECTION_ORIENTATION.HORIZONTAL ) {
             var remove_btn_block = document.createElement('td');
-            var remove_btn = create_remove_button();
-            remove_btn_block.appendChild(remove_btn);
+
+            if (self.meta.isModification()) {
+                var remove_btn = create_remove_button();
+                remove_btn_block.appendChild(remove_btn);
+            }
 
             var $tr = self.find('>table>tr:last-child').prev();
 
@@ -679,9 +699,12 @@
                     .append( create_name_field() );
             }
 
-            remove_btn.onclick = remove_horizontal_element($tr);
+            if (self.meta.isModification()) {
+                remove_btn.onclick = remove_horizontal_element($tr);
+            }
 
             $(remove_btn_block)
+                .addClass('remove_block')
                 .insertAfter($tr.find('>*:last-child'));
         }
     }
@@ -694,18 +717,45 @@
         }
 
         var remove_btn_block = document.createElement('td');
-        var remove_btn = create_remove_button();
-        remove_btn_block.appendChild(remove_btn);
 
-        remove_btn.onclick = remove_vertical_element;
+        if (self.meta.isModification()) {
+            var remove_btn = create_remove_button();
+            remove_btn_block.appendChild(remove_btn);
+
+            remove_btn.onclick = remove_vertical_element;
+        }
 
         $( remove_btn_block )
-            .insertAfter( self.find( '>table>tr:last-child>*:last-child' ) );
+            .addClass('remove_block');
+
+        var last_child = self.find( '>table>tr:last-child>*:last-child' );
+
+        if (last_child.length > 0) {
+            $( remove_btn_block ).insertAfter( self.find( '>table>tr:last-child>*:last-child' ) );
+        } else {
+            self.find( '>table>tr:last-child').append( $( remove_btn_block ) );
+        }
     }
 
     function update_buttons() {
         getAddButton().attr( 'disabled', !( self.elements_count < self.max_elements ) );
         getRemoveButtons().attr( 'disabled', !( self.elements_count > self.min_elements ) );
+
+        if (self.meta.isModification()) {
+            getAddButtonBlock().removeClass('invisible');
+            getRemoveButtonsBlocks().removeClass('invisible');
+        } else {
+            getAddButtonBlock().addClass('invisible');
+            getRemoveButtonsBlocks().addClass('invisible');
+        }
+    }
+
+    function getAddButtonBlock() {
+        return self.find( '>table>tr.add_block, >table>tr>*.add_block' );
+    }
+
+    function getRemoveButtonsBlocks() {
+        return self.find( '>table>tr>*.remove_block' );
     }
 
     function getAddButton() {

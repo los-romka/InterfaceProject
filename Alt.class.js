@@ -27,25 +27,27 @@
     return self;
 
     function updateIweConcepts($iweBlock) {
-        self.iwe = $iweBlock;
-        var list = self.find( '>select' )[0];
+        if (self.meta.isModification()) {
+            self.iwe = $iweBlock;
+            var list = self.find( '>select' )[0];
 
-        var child_meta = self.meta.children[list.value];
+            var child_meta = self.meta.children[list.value];
 
-        if (child_meta.interface_specifier != INTERFACE_SPECIFIER.TERMINAL_VALUE) {
-            var $child_block = self.find( '>div' );
+            if (child_meta.interface_specifier != INTERFACE_SPECIFIER.TERMINAL_VALUE) {
+                var $child_block = self.find( '>div' );
 
-            var infos = getIweInfos($iweBlock, child_meta);
+                var infos = getIweInfos($iweBlock, child_meta);
 
-            if (child_meta.interface_specifier === INTERFACE_SPECIFIER.COLLECTION) {
-                AbstractVertex( $child_block, child_meta )
-                    .updateIweConcepts($iweBlock);
-            } else if (infos.length === 0) {
-                var produce = getIweProduceFunction($iweBlock, $child_block, child_meta);
-                produce(function() {});
-            } else {
-                AbstractVertex( $child_block, child_meta )
-                    .updateIweConcepts(infos.eq(0));
+                if (child_meta.interface_specifier === INTERFACE_SPECIFIER.COLLECTION) {
+                    AbstractVertex( $child_block, child_meta )
+                        .updateIweConcepts($iweBlock);
+                } else if (infos.length === 0) {
+                    var produce = getIweProduceFunction($iweBlock, $child_block, child_meta);
+                    produce(function() {});
+                } else {
+                    AbstractVertex( $child_block, child_meta )
+                        .updateIweConcepts(infos.eq(0));
+                }
             }
         }
     }
@@ -105,6 +107,8 @@
     function get_alt_block( element_metainf, title ) {
         var alt_block = document.createElement( 'div' ),
             select = document.createElement( 'select' );
+
+        $( select ).prop('disabled', !self.meta.isModification() );
 
         if ( title ) {
             var ttl = document.createElement( 'h1' );
