@@ -204,6 +204,25 @@ function doPlatformActions(args, $tableRepresentationNode, callback, last_data, 
     }
 }
 
+function updateTableRepresentationInfo($node, last_data) {
+    var $tableRepresentationNode = $node.closest('.table-representation');
+    var code = $tableRepresentationNode.data('node-code');
+
+    var $newTable = $( last_data )
+        .find('[data-node-code="' + code + '"]');
+
+    var parser = IrParser();
+
+    var info;
+
+    if ( info = $newTable.data('tpir-info') ) {
+        $tableRepresentationNode
+            .data('table-representation')
+            .setInfo( parser.toJson( info ) )
+            .refresh();
+    }
+}
+
 function getParentIweBlock($iweBlock) {
     return $iweBlock.parent().closest('.iwe-concept');
 }

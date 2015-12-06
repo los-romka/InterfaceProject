@@ -13,6 +13,7 @@
         setInfo: setInfo,
         getInfo: getInfo,
         destroy: function() {
+            self.removeData( "collection" );
             self.html('');
         }
     });
@@ -25,10 +26,37 @@
 
     /* init DOM */
     var _orientation = in_array(config.ORIENTATION, [COLLECTION_ORIENTATION.HORIZONTAL,COLLECTION_ORIENTATION.VERTICAL]) ?  config.ORIENTATION : COLLECTION_ORIENTATION.HORIZONTAL;
+    self.meta.interface_params.ORIENTATION = _orientation;
+
     var _type = intersect( self.meta.specifiers, [ SPECIFIER.SET, SPECIFIER.SETMM ] ).length > 0
         || ( intersect( self.meta.specifiers, [ SPECIFIER.ONE, SPECIFIER.ONEMM ] ).length > 0 && !self.meta.sort )
         ? COLLECTION_TYPE.SET
         : COLLECTION_TYPE.LIST;
+
+    /* append switch-orientation btn */
+    var $switchOrientationBtn = $('<button>&#8634;</button>');
+    $switchOrientationBtn.addClass('rotate-btn');
+    $switchOrientationBtn.data('orientation', _orientation);
+
+    $switchOrientationBtn.click(function() {
+        var info = self.getInfo();
+        var iwe = self.iwe;
+
+        self.meta.interface_params.ORIENTATION =
+            COLLECTION_ORIENTATION.HORIZONTAL == $( this ).data('orientation')
+            ? COLLECTION_ORIENTATION.VERTICAL
+            : COLLECTION_ORIENTATION.HORIZONTAL;
+
+        $( this ).data('orientation', self.meta.interface_params.ORIENTATION)
+
+        self.destroy();
+
+        CollectionVertex( self, self.meta )
+            .setInfo(info)
+            .updateIweConcepts(iwe);
+    });
+
+    self.append($switchOrientationBtn);
 
     self.element_meta.simplifyCollection();
 
@@ -79,6 +107,7 @@
     /** TODO: refactor */
     function updateIweConcepts($iweBlock) {
         /* produce */
+        self.iwe = $iweBlock;
         self.produce = getIweProduceFunction($iweBlock, self, self.meta);
         self.delete = getIweDeleteFunction($iweBlock, self, self.meta);
 
@@ -440,7 +469,7 @@
             queue_info = [];
 
         queue_meta.push( clone(element_metainf) );
-        queue_info.push( clone(info) );
+        queue_info.push( info );
 
         while ( queue_meta.length ) {
 
@@ -625,12 +654,14 @@
                 self.elements_count--;
                 update_buttons();
             });
+
+            return false;
         }
     }
 
     function remove_vertical_element() {
         var btn = $( this );
-        var index = btn.parent().index() - 1;
+        var index = btn.parent().index() - (_height == 1 && _width == 1 ? 0 : 1);
 
         self.delete(index, function() {
             self.elements.splice(index,1);
@@ -652,13 +683,19 @@
             self.elements_count--;
             update_buttons();
         });
+
+        return false;
     }
 
     function generate_add_button() {
         var add_btn = document.createElement( 'button' );
         add_btn.textContent = '+ Добавить';
         add_btn.onclick = function() {
-            self.produce(fixElementsOrder);
+            self.produce(function(res) {
+                updateTableRepresentationInfo(self, res);
+            });
+
+            return false;
         };
 
         $( add_btn ).addClass('add');
@@ -927,21 +964,5 @@
 
     function isHeaderVertex( vertex ) {
         return in_array( vertex.interface_specifier, [INTERFACE_SPECIFIER.UNDEFINED, INTERFACE_SPECIFIER.COMPLEX] );
-    }
-
-    function fixElementsOrder(res) {
-        var win = self.closest('div.iacpaas-window');
-        var currentTabIdx = parseInt(win.attr('current-tab'));
-        var currentTab = win.find('div#iacpaas-tabs div#iacpaas-tab-' + (currentTabIdx + 1));
-        if (currentTab.length == 0)
-            currentTab = win;
-
-        var r;
-        if ((r = /\$REDIRECT\$:(.*)$/.exec(res)) != null)
-            window.location = r[1];
-        else
-            currentTab[0].innerHTML = res;
-
-        vivify();
     }
 }

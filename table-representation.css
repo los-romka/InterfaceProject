@@ -126,3 +126,11 @@
 .table-representation.invisible {
     display: none;
 }
+
+.table-representation button.rotate-btn {
+    float: left;
+    position: relative;
+    top: -8px;
+    left: 12px;
+    border-radius: 15px;
+}
